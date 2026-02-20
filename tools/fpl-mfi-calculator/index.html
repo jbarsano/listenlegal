@@ -104,38 +104,6 @@
     .callout.ok{ background:var(--okbg); border-color:var(--okbd); }
     .callout.bad{ background:var(--badbg); border-color:var(--badbd); }
 
-    .summary{
-      margin-top:14px;
-      border-radius:var(--radius);
-      border:1px solid var(--border);
-      background:#fff;
-      padding:14px;
-    }
-    .summary h3{
-      margin:0 0 10px;
-      font-size:14px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:0.04em;
-    }
-    .summary-grid{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px 12px;
-    }
-    @media (max-width:820px){ .summary-grid{ grid-template-columns:1fr; } }
-    .kv{
-      border:1px solid var(--border);
-      border-radius:12px;
-      padding:10px 12px;
-      background:#fff;
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      font-size:13px;
-      color:var(--muted);
-    }
-    .kv b{ color:var(--text); }
 
     .error{ display:none; margin-top:12px; padding:10px 12px; border-radius:12px; border:1px solid var(--badbd); background:var(--badbg); color:#991b1b; font-weight:650; font-size:13px; }
 
@@ -173,7 +141,6 @@
       .card{ box-shadow:none; border:0; padding:0; }
       .results{ margin-top:0; }
       .panel{ break-inside:avoid; }
-      .summary{ break-inside:avoid; border:1px solid #ddd; }
       a{ text-decoration:none; color:inherit; }
     }
   </style>
@@ -186,7 +153,7 @@
 
       <div class="actions">
         <button class="btn" id="copyLinkBtn" type="button">Copy link</button>
-        <button class="btn" id="printBtn" type="button">Print summary</button>
+        <button class="btn" id="printBtn" type="button">Print</button>
         <button class="btn muted" id="clearBtn" type="button">Clear fields</button>
       </div>
     </div>
@@ -261,25 +228,6 @@
           <div class="line" id="mfiDetail">Enter income and household size.</div>
           <div id="mfiCallout" class="callout" style="display:none;"></div>
           <div id="mfiBandOnly" class="callout" style="display:none;"></div>
-        </div>
-      </div>
-
-      <!-- Printable summary (also useful on-screen) -->
-      <div class="summary" id="summaryBox" style="display:none;">
-        <h3>Summary</h3>
-        <div class="summary-grid">
-          <div class="kv"><span>Annual income</span><b id="sumIncomeAnnual">—</b></div>
-          <div class="kv"><span>Monthly income</span><b id="sumIncomeMonthly">—</b></div>
-          <div class="kv"><span>Household size</span><b id="sumSize">—</b></div>
-          <div class="kv"><span>FPL region</span><b id="sumFplRegion">—</b></div>
-
-          <div class="kv"><span>% of FPL</span><b id="sumFplPct">—</b></div>
-          <div class="kv"><span>200–400% of FPL</span><b id="sumFplBandTest">—</b></div>
-
-          <div class="kv"><span>% of MFI</span><b id="sumMfiPct">—</b></div>
-          <div class="kv"><span>Below 80% of MFI</span><b id="sumMfiBelow80">—</b></div>
-
-          <div class="kv" style="grid-column:1/-1;"><span>MFI band</span><b id="sumMfiBand">—</b></div>
         </div>
       </div>
 
@@ -369,17 +317,6 @@
     const printBtn = document.getElementById("printBtn");
     const toastEl = document.getElementById("toast");
 
-    const summaryBoxEl = document.getElementById("summaryBox");
-    const sumIncomeAnnualEl = document.getElementById("sumIncomeAnnual");
-    const sumIncomeMonthlyEl = document.getElementById("sumIncomeMonthly");
-    const sumSizeEl = document.getElementById("sumSize");
-    const sumFplRegionEl = document.getElementById("sumFplRegion");
-    const sumFplPctEl = document.getElementById("sumFplPct");
-    const sumFplBandTestEl = document.getElementById("sumFplBandTest");
-    const sumMfiPctEl = document.getElementById("sumMfiPct");
-    const sumMfiBelow80El = document.getElementById("sumMfiBelow80");
-    const sumMfiBandEl = document.getElementById("sumMfiBand");
-
     let lastEdited = null;
     let syncing = false;
 
@@ -404,16 +341,6 @@
       mfiCalloutEl.style.display = "none";
       mfiBandOnlyEl.style.display = "none";
 
-      summaryBoxEl.style.display = "none";
-      sumIncomeAnnualEl.textContent = "—";
-      sumIncomeMonthlyEl.textContent = "—";
-      sumSizeEl.textContent = "—";
-      sumFplRegionEl.textContent = "—";
-      sumFplPctEl.textContent = "—";
-      sumFplBandTestEl.textContent = "—";
-      sumMfiPctEl.textContent = "—";
-      sumMfiBelow80El.textContent = "—";
-      sumMfiBandEl.textContent = "—";
     }
 
     function syncIncomeFields(){
@@ -528,24 +455,6 @@
       return "48 States + DC";
     }
 
-    function updateSummary({
-      annualIncome, monthlyIncome, size, regionLabel,
-      fplPct, between200and400,
-      mfiPct, below80, mfiBand
-    }){
-      summaryBoxEl.style.display = "block";
-      sumIncomeAnnualEl.textContent = Number.isFinite(annualIncome) ? fmtMoney(annualIncome) : "—";
-      sumIncomeMonthlyEl.textContent = Number.isFinite(monthlyIncome) ? fmtMoney(monthlyIncome) : "—";
-      sumSizeEl.textContent = String(Math.floor(size));
-      sumFplRegionEl.textContent = regionLabel;
-
-      sumFplPctEl.textContent = Number.isFinite(fplPct) ? (fplPct.toFixed(1) + "%") : "—";
-      sumFplBandTestEl.textContent = between200and400 ? "YES" : "NO";
-
-      sumMfiPctEl.textContent = Number.isFinite(mfiPct) ? (mfiPct.toFixed(1) + "%") : "—";
-      sumMfiBelow80El.textContent = below80 ? "YES" : "NO";
-      sumMfiBandEl.textContent = mfiBand || "—";
-    }
 
     function update(){
       errorEl.style.display="none";
@@ -595,17 +504,7 @@
         mfiCalloutEl.style.display="none";
         mfiBandOnlyEl.style.display="none";
 
-        updateSummary({
-          annualIncome: incomeAnnualForCalc,
-          monthlyIncome: incomeAnnualForCalc / 12,
-          size,
-          regionLabel: regionLabelFromValue(region),
-          fplPct,
-          between200and400,
-          mfiPct: NaN,
-          below80: false,
-          mfiBand: "—"
-        });
+  
         return;
       }
 
@@ -626,17 +525,6 @@
       mfiBandOnlyEl.className = "callout";
       mfiBandOnlyEl.textContent = "MFI band: " + band;
 
-      updateSummary({
-        annualIncome: incomeAnnualForCalc,
-        monthlyIncome: incomeAnnualForCalc / 12,
-        size,
-        regionLabel: regionLabelFromValue(region),
-        fplPct,
-        between200and400,
-        mfiPct: pctMFI,
-        below80,
-        mfiBand: band
-      });
     }
 
     // Events
@@ -705,4 +593,5 @@
   </script>
 </body>
 </html>
+
 

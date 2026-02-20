@@ -109,6 +109,29 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
   border-top-color:#111827;
 }
 
+.share-strip{
+  margin-top:14px;
+  display:flex;
+  justify-content:flex-start;
+}
+
+.share-link{
+  border:0;
+  background:transparent;
+  color:var(--muted);
+  font-size:13px;
+  font-weight:650;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:12px;
+}
+
+.share-link:hover{ color:var(--text); background:rgba(255,255,255,0.55); }
+.share-ic{ width:18px; height:18px; }
+
 </style>
 </head>
 
@@ -195,6 +218,20 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
     </div>
 
   </div>
+
+
+  <div class="share-strip">
+    <button class="share-link" id="shareBtn" type="button" aria-label="Share this tool">
+      <span>Share this tool</span>
+      <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true">
+        <!-- iOS-style "square with arrow up" -->
+        <path d="M12 16V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
 </div>
 
 <script>
@@ -311,6 +348,21 @@ document.getElementById("clearBtn").onclick=()=>{
 };
 document.getElementById("printBtn").onclick=()=>window.print();
 document.getElementById("copyLinkBtn").onclick=()=>navigator.clipboard.writeText(location.href);
+
+document.getElementById("shareBtn").onclick = async () => {
+  const url = location.href;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "Income Screening Tool", url });
+      return;
+    } catch(e) { /* user cancelled; do nothing */ }
+  }
+
+  // fallback: copy link
+  await navigator.clipboard.writeText(url);
+  alert("Link copied.");
+};
 </script>
 </body>
 </html>

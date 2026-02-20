@@ -277,7 +277,13 @@ ${money(inc)} ÷ ${money(fpl)} × 100 = ${fplPct.toFixed(1)}%">i</span>`;
   if(!MFI[s])return;
   const mfiPct=inc/MFI[s].p100*100;
   document.getElementById("mfiPct").textContent=mfiPct.toFixed(1)+"%";
-  document.getElementById("mfiDetail").textContent=`80% MFI: ${money(MFI[s].p80)}`;
+  document.getElementById("mfiDetail").innerHTML =
+`Calculation <span class="info" data-tip="The Area Median Income (AMI/MFI) for this household size is ${money(MFI[s].p100)}.
+
+80% MFI threshold: ${money(MFI[s].p80)}
+
+Calculation:
+${money(inc)} ÷ ${money(MFI[s].p100)} × 100 = ${mfiPct.toFixed(1)}%">i</span>`;
 
   const below=inc<=MFI[s].p80;
   const mfiCall=document.getElementById("mfiCallout");

@@ -64,89 +64,93 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
 
 .foot{margin-top:18px;color:var(--muted);font-size:12px}
 .foot a{text-decoration:underline}
-
 </style>
 </head>
 
 <body>
 <div class="wrap">
 
-<div class="header-row">
-<h1>Income Screening Tool</h1>
-<div class="actions">
-<button class="btn" id="copyLinkBtn">Copy link</button>
-<button class="btn" id="printBtn">Print</button>
-<button class="btn muted" id="clearBtn">Clear fields</button>
-</div>
-</div>
-
-<p class="subhead">
-Enter household income (annual or monthly) and household size to calculate <strong>% of FPL</strong> and <strong>% of MFI</strong>.
-</p>
-
-<div class="card">
-
-<div class="inputs-grid">
-<div>
-<label>Household income (annual)</label>
-<div class="currency"><span>$</span>
-<input id="incomeAnnual" placeholder="Ex: 45,000"></div>
-</div>
-
-<div>
-<label>Household income (monthly)</label>
-<div class="currency"><span>$</span>
-<input id="incomeMonthly" placeholder="Ex: 3,750"></div>
-</div>
-
-<div>
-<label>Household size</label>
-<input id="size" type="number" min="1" placeholder="Ex: 1">
-</div>
-</div>
-
-<div class="regions-grid">
-<div>
-<label>FPL region</label>
-<select id="region">
-<option value="48">48 States + DC</option>
-<option value="AK">Alaska</option>
-<option value="HI">Hawaii</option>
-</select>
-</div>
-
-<div>
-<label>MFI region</label>
-<select disabled><option selected>DC</option></select>
-</div>
-</div>
-
-<div class="results">
-
-<div class="panel">
-<h2>FPL</h2>
-<div class="big" id="fplPct">—</div>
-<div class="line" id="fplDetail">Enter income and size.</div>
-<div id="fplRangeBox" class="callout" style="display:none"></div>
-</div>
-
-<div class="panel">
-<h2>MFI</h2>
-<div class="big" id="mfiPct">—</div>
-<div class="line" id="mfiDetail">Enter income and size.</div>
-<div id="mfiCallout" class="callout" style="display:none"></div>
-<div id="mfiBandOnly" class="callout" style="display:none"></div>
-</div>
-
-</div>
-
- <div class="foot">
-        <strong>Sources:</strong>
-        FPL uses the ASPE / HHS poverty guidelines <a href="https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines" target="_blank" rel="noopener noreferrer">(2026)</a>.
-        MFI uses the DHCD Inclusionary Zoning “Maximum Annual Income” schedule <a href="https://dhcd.dc.gov/publication/2026-inclusionary-zoning-maximum-income-rent-and-purchase-price-schedule" target="_blank" rel="noopener noreferrer">(2026)</a>.
-      </div>
+  <div class="header-row">
+    <h1>Income Screening Tool</h1>
+    <div class="actions">
+      <button class="btn" id="copyLinkBtn" type="button">Copy link</button>
+      <button class="btn" id="printBtn" type="button">Print</button>
+      <button class="btn muted" id="clearBtn" type="button">Clear fields</button>
     </div>
   </div>
+
+  <p class="subhead">
+    Enter household income (annual or monthly) and household size to calculate <strong>% of FPL</strong> and <strong>% of MFI</strong>.
+  </p>
+
+  <div class="card">
+
+    <div class="inputs-grid">
+      <div>
+        <label>Household income (annual)</label>
+        <div class="currency"><span>$</span>
+          <input id="incomeAnnual" placeholder="Ex: 45,000" inputmode="decimal">
+        </div>
+      </div>
+
+      <div>
+        <label>Household income (monthly)</label>
+        <div class="currency"><span>$</span>
+          <input id="incomeMonthly" placeholder="Ex: 3,750" inputmode="decimal">
+        </div>
+      </div>
+
+      <div>
+        <label>Household size</label>
+        <input id="size" type="number" min="1" placeholder="Ex: 1">
+      </div>
+    </div>
+
+    <div class="regions-grid">
+      <div>
+        <label>FPL region</label>
+        <select id="region">
+          <option value="48">48 States + DC</option>
+          <option value="AK">Alaska</option>
+          <option value="HI">Hawaii</option>
+        </select>
+      </div>
+
+      <div>
+        <label>MFI region</label>
+        <select disabled><option selected>DC</option></select>
+      </div>
+    </div>
+
+    <div class="results">
+
+      <div class="panel">
+        <h2>FPL</h2>
+        <div class="big" id="fplPct">—</div>
+        <div class="line" id="fplDetail">Enter income and size.</div>
+        <div id="fplRangeBox" class="callout" style="display:none"></div>
+      </div>
+
+      <div class="panel">
+        <h2>MFI</h2>
+        <div class="big" id="mfiPct">—</div>
+        <div class="line" id="mfiDetail">Enter income and size.</div>
+        <div id="mfiCallout" class="callout" style="display:none"></div>
+        <div id="mfiBandOnly" class="callout" style="display:none"></div>
+      </div>
+
+    </div>
+
+    <div class="foot">
+      <strong>Sources:</strong>
+      FPL uses the ASPE / HHS poverty guidelines
+      <a href="https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines" target="_blank" rel="noopener noreferrer">(2026)</a>.
+      MFI uses the DHCD Inclusionary Zoning “Maximum Annual Income” schedule
+      <a href="https://dhcd.dc.gov/publication/2026-inclusionary-zoning-maximum-income-rent-and-purchase-price-schedule" target="_blank" rel="noopener noreferrer">(2026)</a>.
+    </div>
+
+  </div>
+</div>
 
 <script>
 // --- DATA ---
@@ -161,63 +165,97 @@ const region=document.getElementById("region");
 function num(v){return Number(String(v).replace(/[^0-9.]/g,""))}
 function money(n){return "$"+Math.round(n).toLocaleString()}
 
-function sync(from){
-if(from==="a"&&num(annual.value))monthly.value=(num(annual.value)/12).toLocaleString();
-if(from==="m"&&num(monthly.value))annual.value=(num(monthly.value)*12).toLocaleString();
-update();
+/* ✅ ADDED: comma formatting while typing (minimal change) */
+function formatCurrencyInput(el){
+  let value = el.value.replace(/[^0-9.]/g,"");
+  if(value===""){ el.value=""; return; }
+
+  const parts = value.split(".");
+  const intPart = Number(parts[0] || "0").toLocaleString();
+  const decPart = parts[1] ? "." + parts[1] : "";
+
+  el.value = intPart + decPart;
 }
 
-annual.oninput=()=>sync("a");
-monthly.oninput=()=>sync("m");
+/* ✅ UPDATED: prevent loops + format synced value (minimal change) */
+let syncing=false;
+function sync(from){
+  if(syncing) return;
+  syncing=true;
+
+  const a=num(annual.value);
+  const m=num(monthly.value);
+
+  if(from==="a" && a){
+    monthly.value = (a/12).toFixed(2);
+    formatCurrencyInput(monthly);
+  }
+  if(from==="m" && m){
+    annual.value = (m*12).toFixed(2);
+    formatCurrencyInput(annual);
+  }
+
+  syncing=false;
+  update();
+}
+
+/* ✅ UPDATED: call formatter before syncing (minimal change) */
+annual.oninput=()=>{
+  formatCurrencyInput(annual);
+  sync("a");
+};
+monthly.oninput=()=>{
+  formatCurrencyInput(monthly);
+  sync("m");
+};
+
 size.oninput=region.onchange=update;
 
 function update(){
-const inc=num(annual.value)||num(monthly.value)*12;
-const s=parseInt(size.value);
-if(!inc||!s)return;
+  const inc=num(annual.value)||num(monthly.value)*12;
+  const s=parseInt(size.value);
+  if(!inc||!s)return;
 
-const fpl=FPL_100[region.value][Math.min(s,8)-1];
-const fplPct=inc/fpl*100;
-document.getElementById("fplPct").textContent=fplPct.toFixed(1)+"%";
-document.getElementById("fplDetail").textContent=`100% FPL: ${money(fpl)}`;
-const fplBox=document.getElementById("fplRangeBox");
-fplBox.style.display="block";
-fplBox.className="callout "+(fplPct>=200&&fplPct<=400?"ok":"bad");
-fplBox.textContent=`Between 200–400% of FPL? ${(fplPct>=200&&fplPct<=400)?"YES":"NO"}`;
+  const fpl=FPL_100[region.value][Math.min(s,8)-1];
+  const fplPct=inc/fpl*100;
+  document.getElementById("fplPct").textContent=fplPct.toFixed(1)+"%";
+  document.getElementById("fplDetail").textContent=`100% FPL: ${money(fpl)}`;
+  const fplBox=document.getElementById("fplRangeBox");
+  fplBox.style.display="block";
+  fplBox.className="callout "+(fplPct>=200&&fplPct<=400?"ok":"bad");
+  fplBox.textContent=`Between 200–400% of FPL? ${(fplPct>=200&&fplPct<=400)?"YES":"NO"}`;
 
-if(!MFI[s])return;
-const mfiPct=inc/MFI[s].p100*100;
-document.getElementById("mfiPct").textContent=mfiPct.toFixed(1)+"%";
-document.getElementById("mfiDetail").textContent=`80% MFI: ${money(MFI[s].p80)}`;
+  if(!MFI[s])return;
+  const mfiPct=inc/MFI[s].p100*100;
+  document.getElementById("mfiPct").textContent=mfiPct.toFixed(1)+"%";
+  document.getElementById("mfiDetail").textContent=`80% MFI: ${money(MFI[s].p80)}`;
 
-const below=inc<=MFI[s].p80;
-const mfiCall=document.getElementById("mfiCallout");
-mfiCall.style.display="block";
-mfiCall.className="callout "+(below?"ok":"bad");
-mfiCall.textContent=`Below 80% of MFI? ${below?"YES":"NO"}`;
+  const below=inc<=MFI[s].p80;
+  const mfiCall=document.getElementById("mfiCallout");
+  mfiCall.style.display="block";
+  mfiCall.className="callout "+(below?"ok":"bad");
+  mfiCall.textContent=`Below 80% of MFI? ${below?"YES":"NO"}`;
 
-let band="Over 120%";
-if(mfiPct<30)band="0–30%";
-else if(mfiPct<50)band="30–50%";
-else if(mfiPct<60)band="50–60%";
-else if(mfiPct<80)band="60–80%";
-else if(mfiPct<100)band="80–100%";
-else if(mfiPct<120)band="100–120%";
+  let band="Over 120%";
+  if(mfiPct<30)band="0–30%";
+  else if(mfiPct<50)band="30–50%";
+  else if(mfiPct<60)band="50–60%";
+  else if(mfiPct<80)band="60–80%";
+  else if(mfiPct<100)band="80–100%";
+  else if(mfiPct<120)band="100–120%";
 
-const bandBox=document.getElementById("mfiBandOnly");
-bandBox.style.display="block";
-bandBox.textContent="MFI band: "+band+" of MFI";
+  const bandBox=document.getElementById("mfiBandOnly");
+  bandBox.style.display="block";
+  bandBox.textContent="MFI band: "+band+" of MFI";
 }
 
 document.getElementById("clearBtn").onclick=()=>{
-annual.value="";monthly.value="";size.value="";
-location.search="";
-update();
+  annual.value="";monthly.value="";size.value="";
+  location.search="";
+  update();
 };
 document.getElementById("printBtn").onclick=()=>window.print();
 document.getElementById("copyLinkBtn").onclick=()=>navigator.clipboard.writeText(location.href);
-
 </script>
 </body>
 </html>
-

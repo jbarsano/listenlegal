@@ -13,6 +13,12 @@
   gtag('js', new Date());
 
   gtag('config', 'G-LWXCCNB3Y2');
+
+  function trackEvent(name, params = {}) {
+  if (typeof gtag === "function") {
+    gtag("event", name, params);
+  }
+}
 </script>
 
 <style>
@@ -262,7 +268,17 @@ const monthly=document.getElementById("incomeMonthly");
 const size=document.getElementById("size");
 const region=document.getElementById("region");
 
+/* analytics state */
+let useTimer = null;
+let lastUseSignature = "";
 
+/* helper */
+function trackEvent(name, params = {}) {
+  if (typeof gtag === "function") {
+    gtag("event", name, params);
+  }
+}
+  
 const copyLinkBtn = document.getElementById("copyLinkBtn");
 const toastEl = document.getElementById("toast");
 
@@ -397,6 +413,17 @@ function update(){
   const s=parseInt(size.value);
   if(!inc||!s)return;
 
+  /* analytics state (ADD HERE) */
+let useTimer = null;
+let lastUseSignature = "";
+
+/* helper */
+function trackEvent(name, params = {}) {
+  if (typeof gtag === "function") {
+    gtag("event", name, params);
+  }
+}
+  
   const fpl=FPL_100[region.value][Math.min(s,8)-1];
   const fplPct=inc/fpl*100;
   document.getElementById("fplPct").textContent=fplPct.toFixed(1)+"%";
@@ -486,4 +513,5 @@ update();
 </script>
 </body>
 </html>
+
 

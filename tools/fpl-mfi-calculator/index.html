@@ -247,7 +247,7 @@ const region=document.getElementById("region");
 function num(v){return Number(String(v).replace(/[^0-9.]/g,""))}
 function money(n){return "$"+Math.round(n).toLocaleString()}
 
-/* ✅ ADDED: comma formatting while typing (minimal change) */
+/* ADDED: comma formatting while typing (minimal change) */
 function formatCurrencyInput(el){
   let value = el.value.replace(/[^0-9.]/g,"");
   if(value===""){ el.value=""; return; }
@@ -259,7 +259,7 @@ function formatCurrencyInput(el){
   el.value = intPart + decPart;
 }
 
-/* ✅ UPDATED: prevent loops + format synced value (minimal change) */
+/* UPDATED: prevent loops + format synced value (minimal change) */
 let syncing=false;
 function sync(from){
   if(syncing) return;
@@ -281,7 +281,7 @@ function sync(from){
   update();
 }
 
-/* ✅ UPDATED: call formatter before syncing (minimal change) */
+/* UPDATED: call formatter before syncing (minimal change) */
 annual.oninput=()=>{
   formatCurrencyInput(annual);
   sync("a");
@@ -366,3 +366,4 @@ document.getElementById("shareBtn").onclick = async () => {
 </script>
 </body>
 </html>
+

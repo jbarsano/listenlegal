@@ -64,6 +64,51 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
 
 .foot{margin-top:18px;color:var(--muted);font-size:12px}
 .foot a{text-decoration:underline}
+
+/* tooltip */
+.info{
+  display:inline-block;
+  position:relative;
+  margin-left:6px;
+  width:16px;
+  height:16px;
+  border-radius:50%;
+  background:#e5e7eb;
+  color:#374151;
+  font-size:12px;
+  line-height:16px;
+  text-align:center;
+  font-weight:700;
+  cursor:default;
+}
+
+.info:hover::after{
+  content:attr(data-tip);
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:125%;
+  background:#111827;
+  color:#fff;
+  padding:8px 10px;
+  border-radius:8px;
+  font-size:12px;
+  width:220px;
+  text-align:left;
+  white-space:pre-line;
+  z-index:50;
+}
+
+.info:hover::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:115%;
+  border:6px solid transparent;
+  border-top-color:#111827;
+}
+
 </style>
 </head>
 
@@ -219,7 +264,11 @@ function update(){
   const fpl=FPL_100[region.value][Math.min(s,8)-1];
   const fplPct=inc/fpl*100;
   document.getElementById("fplPct").textContent=fplPct.toFixed(1)+"%";
-  document.getElementById("fplDetail").textContent=`100% FPL: ${money(fpl)}`;
+  document.getElementById("fplDetail").innerHTML =
+`Calculation <span class="info" data-tip="The government’s baseline income for a household this size is ${money(fpl)}. Eligibility is calculated as a percentage of this number.
+
+Calculation:
+${money(inc)} ÷ ${money(fpl)} × 100 = ${fplPct.toFixed(1)}%">i</span>`;
   const fplBox=document.getElementById("fplRangeBox");
   fplBox.style.display="block";
   fplBox.className="callout "+(fplPct>=200&&fplPct<=400?"ok":"bad");

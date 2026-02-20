@@ -37,6 +37,18 @@ h1{margin:0;font-size:22px}
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:0 10px 24px rgba(17,24,39,0.06)}
 
+
+.toast{
+  display:none;
+  margin-top:10px;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  background:var(--soft);
+  font-size:13px;
+  color:var(--text);
+}
+
 .inputs-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 @media(max-width:820px){.inputs-grid{grid-template-columns:1fr}}
 
@@ -81,7 +93,6 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
   font-weight:700;
   cursor:default;
 }
-
 .info:hover::after{
   content:attr(data-tip);
   position:absolute;
@@ -98,7 +109,6 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
   white-space:pre-line;
   z-index:50;
 }
-
 .info:hover::before{
   content:"";
   position:absolute;
@@ -114,7 +124,6 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
   display:flex;
   justify-content:flex-start;
 }
-
 .share-link{
   border:0;
   background:transparent;
@@ -128,10 +137,8 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
   padding:10px 12px;
   border-radius:12px;
 }
-
 .share-link:hover{ color:var(--text); background:rgba(255,255,255,0.55); }
 .share-ic{ width:18px; height:18px; }
-
 </style>
 </head>
 
@@ -141,7 +148,7 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
   <div class="header-row">
     <h1>Income Screening Tool</h1>
     <div class="actions">
-      <button class="btn" id="copyLinkBtn" type="button">Copy link</button>
+      <button class="btn" id="copyLinkBtn" type="button">Share result</button>
       <button class="btn" id="printBtn" type="button">Print</button>
       <button class="btn muted" id="clearBtn" type="button">Clear fields</button>
     </div>
@@ -152,6 +159,9 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
   </p>
 
   <div class="card">
+
+    
+    <div id="toast" class="toast"></div>
 
     <div class="inputs-grid">
       <div>
@@ -219,12 +229,10 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
 
   </div>
 
-
   <div class="share-strip">
     <button class="share-link" id="shareBtn" type="button" aria-label="Share this tool">
       <span>Share this tool</span>
       <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true">
-        <!-- iOS-style "square with arrow up" -->
         <path d="M12 16V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
         <path d="M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -244,10 +252,88 @@ const monthly=document.getElementById("incomeMonthly");
 const size=document.getElementById("size");
 const region=document.getElementById("region");
 
+
+const copyLinkBtn = document.getElementById("copyLinkBtn");
+const toastEl = document.getElementById("toast");
+
+
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.style.display = "block";
+  window.clearTimeout(showToast._t);
+  showToast._t = window.setTimeout(()=>{ toastEl.style.display="none"; }, 1800);
+}
+
+
+let suppressUrlSync = false;
+let urlSyncTimer = null;
+
 function num(v){return Number(String(v).replace(/[^0-9.]/g,""))}
 function money(n){return "$"+Math.round(n).toLocaleString()}
 
-/* ADDED: comma formatting while typing (minimal change) */
+
+function getShareState(){
+  const a = num(annual.value);
+  const m = num(monthly.value);
+  const annualForCalc = Number.isFinite(a) && a ? a : (Number.isFinite(m) && m ? m*12 : NaN);
+  const s = Number(size.value);
+  const r = region.value;
+
+  return {
+    a: Number.isFinite(annualForCalc) ? String(Math.round(annualForCalc)) : "",
+    s: (Number.isFinite(s) && s >= 1) ? String(Math.floor(s)) : "",
+    r: r || "48"
+  };
+}
+
+function buildShareUrl(){
+  const u = new URL(window.location.href);
+  const {a,s,r} = getShareState();
+
+  u.searchParams.delete("a");
+  u.searchParams.delete("s");
+  u.searchParams.delete("r");
+
+  if (a) u.searchParams.set("a", a);
+  if (s) u.searchParams.set("s", s);
+  if (r && r !== "48") u.searchParams.set("r", r);
+
+  return u.toString();
+}
+
+function scheduleUrlSync(){
+  if (suppressUrlSync) return;
+  window.clearTimeout(urlSyncTimer);
+  urlSyncTimer = window.setTimeout(() => {
+    try{
+      const shareUrl = buildShareUrl();
+      window.history.replaceState({}, "", shareUrl);
+    }catch(e){}
+  }, 250);
+}
+
+function loadFromUrl(){
+  const u = new URL(window.location.href);
+  const a = u.searchParams.get("a");
+  const s = u.searchParams.get("s");
+  const r = u.searchParams.get("r");
+
+  suppressUrlSync = true;
+
+  if (a && /^\d+(\.\d+)?$/.test(a)) {
+    annual.value = Number(a).toLocaleString();
+    formatCurrencyInput(annual);
+    // sync monthly so the UI matches
+    monthly.value = (Number(a)/12).toFixed(2);
+    formatCurrencyInput(monthly);
+  }
+  if (s && /^\d+$/.test(s)) size.value = String(Math.max(1, parseInt(s,10)));
+  if (r && (r === "48" || r === "AK" || r === "HI")) region.value = r;
+
+  suppressUrlSync = false;
+}
+
+
 function formatCurrencyInput(el){
   let value = el.value.replace(/[^0-9.]/g,"");
   if(value===""){ el.value=""; return; }
@@ -259,7 +345,7 @@ function formatCurrencyInput(el){
   el.value = intPart + decPart;
 }
 
-/* UPDATED: prevent loops + format synced value (minimal change) */
+
 let syncing=false;
 function sync(from){
   if(syncing) return;
@@ -281,7 +367,7 @@ function sync(from){
   update();
 }
 
-/* UPDATED: call formatter before syncing (minimal change) */
+
 annual.oninput=()=>{
   formatCurrencyInput(annual);
   sync("a");
@@ -294,6 +380,9 @@ monthly.oninput=()=>{
 size.oninput=region.onchange=update;
 
 function update(){
+
+  scheduleUrlSync();
+
   const inc=num(annual.value)||num(monthly.value)*12;
   const s=parseInt(size.value);
   if(!inc||!s)return;
@@ -342,28 +431,48 @@ ${money(inc)} ÷ ${money(MFI[s].p100)} × 100 = ${mfiPct.toFixed(1)}%">i</span>`
 }
 
 document.getElementById("clearBtn").onclick=()=>{
+  suppressUrlSync = true;
   annual.value="";monthly.value="";size.value="";
+  region.value="48";
   location.search="";
+  suppressUrlSync = false;
   update();
 };
 document.getElementById("printBtn").onclick=()=>window.print();
-document.getElementById("copyLinkBtn").onclick=()=>navigator.clipboard.writeText(location.href);
+
+
+copyLinkBtn.addEventListener("click", async () => {
+  const url = buildShareUrl();
+  try{
+    await navigator.clipboard.writeText(url);
+    showToast("Link copied.");
+  }catch(e){
+    const ta = document.createElement("textarea");
+    ta.value = url;
+    document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand("copy"); showToast("Link copied."); }
+    catch(e2){ showToast("Could not copy automatically. You can copy from the address bar."); }
+    document.body.removeChild(ta);
+  }
+});
 
 document.getElementById("shareBtn").onclick = async () => {
-  const url = location.href;
-
+  const url = buildShareUrl(); // uses same share URL
   if (navigator.share) {
     try {
       await navigator.share({ title: "Income Screening Tool", url });
       return;
     } catch(e) { /* user cancelled; do nothing */ }
   }
-
-  // fallback: copy link
+  // fallback: copy link (keep alert behavior)
   await navigator.clipboard.writeText(url);
   alert("Link copied.");
 };
+
+
+loadFromUrl();
+update();
 </script>
 </body>
 </html>
-

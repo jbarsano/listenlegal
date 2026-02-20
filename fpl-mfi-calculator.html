@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Income Screening Tool (FPL + MFI)</title>
+  <style>
+    :root{
+      --bg:#f6f7fb; --card:#fff; --border:#e6e8ef;
+      --text:#1f2937; --muted:#6b7280;
+      --okbg:#ecfdf3; --okbd:#bbf7d0;
+      --badbg:#fef2f2; --badbd:#fecaca;
+      --soft:#f3f4f6; --radius:14px;
+      --btnbg:#ffffff;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--text); padding:22px 14px 40px; }
+    .wrap{ max-width:860px; margin:0 auto; }
+
+    .header-row{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:6px;
+      flex-wrap:wrap;
+    }
+    h1{ margin:0; font-size:22px; letter-spacing:-0.01em; }
+
+    .actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    /* Smaller buttons */
+    .btn{
+      border:1px solid var(--border);
+      background:var(--btnbg);
+      padding:6px 10px;           /* smaller */
+      border-radius:12px;
+      font-size:12px;             /* smaller */
+      font-weight:650;
+      color:var(--text);
+      cursor:pointer;
+      white-space:nowrap;
+      line-height:1;
+    }
+    .btn:hover{ box-shadow:0 6px 14px rgba(17,24,39,0.08); }
+    .btn:active{ transform:translateY(1px); }
+    .btn.muted{ color:var(--muted); }
+    .btn.muted:hover{ color:var(--text); }
+
+    .toast{
+      display:none;
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:var(--soft);
+      font-size:13px;
+      color:var(--text);
+    }
+
+    .subhead{ margin:0 0 16px; color:var(--muted); font-size:14px; line-height:1.35; }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:0 10px 24px rgba(17,24,39,0.06); }
+
+    .inputs-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:820px){ .inputs-grid{ grid-template-columns:1fr; } }
+
+    .regions-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width:820px){ .regions-grid{ grid-template-columns:1fr; } }
+
+    label{ display:block; font-weight:650; font-size:13px; margin:0 0 6px; }
+    input,select{ width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#fff; font-size:16px; outline:none; }
+    input:focus,select:focus{ border-color:#c7cbe0; box-shadow:0 0 0 3px rgba(99,102,241,0.10); }
+
+    .hint{ margin-top:6px; color:var(--muted); font-size:12px; line-height:1.25; }
+
+    .results{
+      margin-top:24px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:820px){ .results{ grid-template-columns:1fr; } }
+
+    .panel{ border-radius:var(--radius); border:1px solid var(--border); padding:14px; background:#fff; }
+    .panel h2{ margin:0 0 8px; font-size:14px; color:var(--muted); text-transform:uppercase; letter-spacing:0.04em; }
+    .big{ font-size:26px; font-weight:800; margin:2px 0 6px; }
+    .line{ color:var(--muted); font-size:13px; line-height:1.35; }
+
+    .callout{ margin-top:10px; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:var(--soft); font-size:13px; color:var(--text); line-height:1.35; }
+    .callout.ok{ background:var(--okbg); border-color:var(--okbd); }
+    .callout.bad{ background:var(--badbg); border-color:var(--badbd); }
+
+    .summary{
+      margin-top:14px;
+      border-radius:var(--radius);
+      border:1px solid var(--border);
+      background:#fff;
+      padding:14px;
+    }
+    .summary h3{
+      margin:0 0 10px;
+      font-size:14px;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:0.04em;
+    }
+    .summary-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px 12px;
+    }
+    @media (max-width:820px){ .summary-grid{ grid-template-columns:1fr; } }
+    .kv{
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#fff;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .kv b{ color:var(--text); }
+
+    .error{ display:none; margin-top:12px; padding:10px 12px; border-radius:12px; border:1px solid var(--badbd); background:var(--badbg); color:#991b1b; font-weight:650; font-size:13px; }
+
+    .foot{ margin-top:12px; color:var(--muted); font-size:12px; line-height:1.35; }
+    .foot a{ color:inherit; text-decoration:underline; }
+    .foot a:hover{ color:var(--text); }
+
+    .currency{ position:relative; }
+    .currency span{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#6b7280;
+      font-weight:600;
+      pointer-events:none;
+    }
+    .currency input{ padding-left:26px !important; }
+
+    ::placeholder{ color:#9ca3af; }
+
+    /* Print styles */
+    @media print{
+      body{ background:#fff; padding:0; }
+      .wrap{ max-width:none; margin:0; }
+      .header-row .actions,
+      .subhead,
+      .inputs-grid,
+      .regions-grid,
+      #error,
+      .foot,
+      .toast{
+        display:none !important;
+      }
+      .card{ box-shadow:none; border:0; padding:0; }
+      .results{ margin-top:0; }
+      .panel{ break-inside:avoid; }
+      .summary{ break-inside:avoid; border:1px solid #ddd; }
+      a{ text-decoration:none; color:inherit; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header-row">
+      <h1>Income Screening Tool</h1>
+
+      <div class="actions">
+        <button class="btn" id="copyLinkBtn" type="button">Copy link</button>
+        <button class="btn" id="printBtn" type="button">Print summary</button>
+        <button class="btn muted" id="clearBtn" type="button">Clear fields</button>
+      </div>
+    </div>
+
+    <p class="subhead">
+      Enter household income (annual or monthly) and household size to calculate <strong>% of FPL</strong> and <strong>% of MFI</strong>.
+    </p>
+
+    <div class="card">
+      <div id="toast" class="toast"></div>
+
+      <!-- Income + size -->
+      <div class="inputs-grid">
+        <div>
+          <label for="incomeAnnual">Household income (annual)</label>
+          <div class="currency">
+            <span>$</span>
+            <input id="incomeAnnual" inputmode="decimal" placeholder="Ex: 45,000" />
+          </div>
+        </div>
+
+        <div>
+          <label for="incomeMonthly">Household income (monthly)</label>
+          <div class="currency">
+            <span>$</span>
+            <input id="incomeMonthly" inputmode="decimal" placeholder="Ex: 3,750" />
+          </div>
+        </div>
+
+        <div>
+          <label for="size">Household size</label>
+          <input id="size" type="number" min="1" step="1" placeholder="Ex: 1" />
+          <div class="hint">MFI supports sizes 1–8.</div>
+        </div>
+      </div>
+
+      <!-- Regions row -->
+      <div class="regions-grid">
+        <div>
+          <label for="region">FPL region</label>
+          <select id="region">
+            <option value="48">48 Contiguous States + DC</option>
+            <option value="AK">Alaska</option>
+            <option value="HI">Hawaii</option>
+          </select>
+          <div class="hint">Affects FPL only.</div>
+        </div>
+
+        <div>
+          <label for="mfiRegion">MFI region</label>
+          <select id="mfiRegion" disabled>
+            <option value="DC" selected>DC</option>
+          </select>
+          <div class="hint">MFI table currently set to DC.</div>
+        </div>
+      </div>
+
+      <div id="error" class="error"></div>
+
+      <!-- Results -->
+      <div class="results">
+        <div class="panel">
+          <h2>FPL</h2>
+          <div class="big" id="fplPct">—</div>
+          <div class="line" id="fplDetail">Enter income and household size.</div>
+          <div id="fplRangeBox" class="callout" style="display:none;"></div>
+        </div>
+
+        <div class="panel">
+          <h2>MFI</h2>
+          <div class="big" id="mfiPct">—</div>
+          <div class="line" id="mfiDetail">Enter income and household size.</div>
+          <div id="mfiCallout" class="callout" style="display:none;"></div>
+          <div id="mfiBandOnly" class="callout" style="display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Printable summary (also useful on-screen) -->
+      <div class="summary" id="summaryBox" style="display:none;">
+        <h3>Summary</h3>
+        <div class="summary-grid">
+          <div class="kv"><span>Annual income</span><b id="sumIncomeAnnual">—</b></div>
+          <div class="kv"><span>Monthly income</span><b id="sumIncomeMonthly">—</b></div>
+          <div class="kv"><span>Household size</span><b id="sumSize">—</b></div>
+          <div class="kv"><span>FPL region</span><b id="sumFplRegion">—</b></div>
+
+          <div class="kv"><span>% of FPL</span><b id="sumFplPct">—</b></div>
+          <div class="kv"><span>200–400% of FPL</span><b id="sumFplBandTest">—</b></div>
+
+          <div class="kv"><span>% of MFI</span><b id="sumMfiPct">—</b></div>
+          <div class="kv"><span>Below 80% of MFI</span><b id="sumMfiBelow80">—</b></div>
+
+          <div class="kv" style="grid-column:1/-1;"><span>MFI band</span><b id="sumMfiBand">—</b></div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <strong>Sources:</strong>
+        FPL uses the ASPE / HHS poverty guidelines <a href="https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines" target="_blank" rel="noopener noreferrer">(2026)</a>.
+        MFI uses the DHCD Inclusionary Zoning “Maximum Annual Income” schedule <a href="https://dhcd.dc.gov/publication/2026-inclusionary-zoning-maximum-income-rent-and-purchase-price-schedule" target="_blank" rel="noopener noreferrer">(2026)</a>.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- Formatting / parsing ----------
+    function parseIncome(val){
+      const cleaned = String(val).replace(/[^0-9.]/g,"");
+      if (!cleaned) return NaN;
+      return Number(cleaned);
+    }
+    function fmtMoney(x){
+      return x.toLocaleString(undefined,{style:"currency",currency:"USD",maximumFractionDigits:0});
+    }
+    function formatCurrencyInput(el) {
+      let value = el.value.replace(/[^0-9.]/g, "");
+      if (value === "") { el.value = ""; return; }
+
+      const parts = value.split(".");
+      const intRaw = parts[0] === "" ? "0" : parts[0];
+      const dec = parts[1] ?? "";
+
+      const intFormatted = Number(intRaw).toLocaleString(undefined, { maximumFractionDigits: 0 });
+      el.value = dec.length > 0 ? `${intFormatted}.${dec}` : intFormatted;
+    }
+
+    // ---------- FPL (2026) — 100% annual ----------
+    const FPL_100 = {
+      "48": { addl: 5680, table_1_14: [15960,21640,27320,33000,38680,44360,50040,55720,61400,67080,72760,78440,84120,89800] },
+      "AK": { addl: 7100, table_1_14: [19950,27050,34150,41250,48350,55450,62550,69650,76750,83850,90950,98050,105150,112250] },
+      "HI": { addl: 6530, table_1_14: [18360,24890,31420,37950,44480,51010,57540,64070,70600,77130,83660,90190,96720,103250] }
+    };
+    function getFPL100(region,size){
+      const cfg = FPL_100[region];
+      const n = Math.max(1, Math.floor(size));
+      if (n <= 14) return cfg.table_1_14[n-1];
+      const g14 = cfg.table_1_14[13];
+      return g14 + (n-14)*cfg.addl;
+    }
+
+    // ---------- MFI (DC IZ table, 2026) ----------
+    const MFI_MAX_ANNUAL = {
+      1:{p30:34400,p50:57350,p60:68850,p80:91800,p100:114750,p120:137700},
+      2:{p30:39350,p50:65550,p60:78650,p80:104900,p100:131100,p120:157350},
+      3:{p30:44250,p50:73750,p60:88500,p80:118000,p100:147500,p120:177000},
+      4:{p30:49150,p50:81950,p60:98340,p80:131000,p100:163900,p120:196700},
+      5:{p30:53100,p50:88550,p60:106260,p80:141600,p100:180300,p120:212400},
+      6:{p30:57050,p50:95100,p60:114120,p80:152100,p100:196700,p120:228150},
+      7:{p30:60950,p50:101650,p60:121980,p80:162600,p100:213050,p120:243900},
+      8:{p30:64900,p50:108200,p60:129840,p80:173100,p100:229450,p120:259600}
+    };
+    function getMFI(size){
+      const n = Math.max(1, Math.floor(size));
+      return MFI_MAX_ANNUAL[n] || null;
+    }
+
+    function getGrantBand(pctMFI){
+      if (!Number.isFinite(pctMFI)) return "—";
+      if (pctMFI < 30) return "0–30% of MFI";
+      if (pctMFI < 50) return "30–50% of MFI";
+      if (pctMFI < 60) return "50–60% of MFI";
+      if (pctMFI < 80) return "60–80% of MFI";
+      if (pctMFI < 100) return "80–100% of MFI";
+      if (pctMFI < 120) return "100–120% of MFI";
+      return "Over 120% of MFI";
+    }
+
+    // ---------- DOM ----------
+    const incomeAnnualEl = document.getElementById("incomeAnnual");
+    const incomeMonthlyEl = document.getElementById("incomeMonthly");
+    const sizeEl = document.getElementById("size");
+    const regionEl = document.getElementById("region");
+    const errorEl = document.getElementById("error");
+
+    const fplPctEl = document.getElementById("fplPct");
+    const fplDetailEl = document.getElementById("fplDetail");
+    const fplRangeBoxEl = document.getElementById("fplRangeBox");
+
+    const mfiPctEl = document.getElementById("mfiPct");
+    const mfiDetailEl = document.getElementById("mfiDetail");
+    const mfiCalloutEl = document.getElementById("mfiCallout");
+    const mfiBandOnlyEl = document.getElementById("mfiBandOnly");
+
+    const clearBtn = document.getElementById("clearBtn");
+    const copyLinkBtn = document.getElementById("copyLinkBtn");
+    const printBtn = document.getElementById("printBtn");
+    const toastEl = document.getElementById("toast");
+
+    const summaryBoxEl = document.getElementById("summaryBox");
+    const sumIncomeAnnualEl = document.getElementById("sumIncomeAnnual");
+    const sumIncomeMonthlyEl = document.getElementById("sumIncomeMonthly");
+    const sumSizeEl = document.getElementById("sumSize");
+    const sumFplRegionEl = document.getElementById("sumFplRegion");
+    const sumFplPctEl = document.getElementById("sumFplPct");
+    const sumFplBandTestEl = document.getElementById("sumFplBandTest");
+    const sumMfiPctEl = document.getElementById("sumMfiPct");
+    const sumMfiBelow80El = document.getElementById("sumMfiBelow80");
+    const sumMfiBandEl = document.getElementById("sumMfiBand");
+
+    let lastEdited = null;
+    let syncing = false;
+
+    // URL syncing
+    let suppressUrlSync = false;
+    let urlSyncTimer = null;
+
+    function showToast(msg){
+      toastEl.textContent = msg;
+      toastEl.style.display = "block";
+      window.clearTimeout(showToast._t);
+      showToast._t = window.setTimeout(()=>{ toastEl.style.display="none"; }, 1800);
+    }
+
+    function resetOutputs(){
+      fplPctEl.textContent = "—";
+      fplDetailEl.textContent = "Enter income and household size.";
+      fplRangeBoxEl.style.display = "none";
+
+      mfiPctEl.textContent = "—";
+      mfiDetailEl.textContent = "Enter income and household size.";
+      mfiCalloutEl.style.display = "none";
+      mfiBandOnlyEl.style.display = "none";
+
+      summaryBoxEl.style.display = "none";
+      sumIncomeAnnualEl.textContent = "—";
+      sumIncomeMonthlyEl.textContent = "—";
+      sumSizeEl.textContent = "—";
+      sumFplRegionEl.textContent = "—";
+      sumFplPctEl.textContent = "—";
+      sumFplBandTestEl.textContent = "—";
+      sumMfiPctEl.textContent = "—";
+      sumMfiBelow80El.textContent = "—";
+      sumMfiBandEl.textContent = "—";
+    }
+
+    function syncIncomeFields(){
+      if (syncing) return;
+      syncing = true;
+
+      const annual = parseIncome(incomeAnnualEl.value);
+      const monthly = parseIncome(incomeMonthlyEl.value);
+
+      if (lastEdited === "annual") {
+        if (Number.isFinite(annual)) {
+          const m = annual / 12;
+          incomeMonthlyEl.value = (Math.round(m * 100) / 100).toLocaleString();
+        } else {
+          incomeMonthlyEl.value = "";
+        }
+        formatCurrencyInput(incomeMonthlyEl);
+      }
+
+      if (lastEdited === "monthly") {
+        if (Number.isFinite(monthly)) {
+          const a = monthly * 12;
+          incomeAnnualEl.value = (Math.round(a * 100) / 100).toLocaleString();
+        } else {
+          incomeAnnualEl.value = "";
+        }
+        formatCurrencyInput(incomeAnnualEl);
+      }
+
+      syncing = false;
+    }
+
+    function getAnnualIncomeForCalc(){
+      const annual = parseIncome(incomeAnnualEl.value);
+      if (Number.isFinite(annual)) return annual;
+
+      const monthly = parseIncome(incomeMonthlyEl.value);
+      if (Number.isFinite(monthly)) return monthly * 12;
+
+      return NaN;
+    }
+
+    function getShareState(){
+      const annual = getAnnualIncomeForCalc();
+      const size = Number(sizeEl.value);
+      const region = regionEl.value;
+
+      return {
+        a: Number.isFinite(annual) ? String(Math.round(annual)) : "",
+        s: (Number.isFinite(size) && size >= 1) ? String(Math.floor(size)) : "",
+        r: region || "48"
+      };
+    }
+
+    function buildShareUrl(){
+      const u = new URL(window.location.href);
+      const {a,s,r} = getShareState();
+
+      u.searchParams.delete("a");
+      u.searchParams.delete("s");
+      u.searchParams.delete("r");
+
+      if (a) u.searchParams.set("a", a);
+      if (s) u.searchParams.set("s", s);
+      if (r && r !== "48") u.searchParams.set("r", r);
+
+      return u.toString();
+    }
+
+    function scheduleUrlSync(){
+      if (suppressUrlSync) return;
+      window.clearTimeout(urlSyncTimer);
+      urlSyncTimer = window.setTimeout(() => {
+        try{
+          const shareUrl = buildShareUrl();
+          window.history.replaceState({}, "", shareUrl);
+        }catch(e){}
+      }, 250);
+    }
+
+    function loadFromUrl(){
+      const u = new URL(window.location.href);
+
+      const a = u.searchParams.get("a");
+      const s = u.searchParams.get("s");
+      const r = u.searchParams.get("r");
+
+      suppressUrlSync = true;
+
+      if (a && /^\d+(\.\d+)?$/.test(a)) {
+        incomeAnnualEl.value = Number(a).toLocaleString();
+        formatCurrencyInput(incomeAnnualEl);
+        lastEdited = "annual";
+        syncIncomeFields();
+      }
+
+      if (s && /^\d+$/.test(s)) {
+        sizeEl.value = String(Math.max(1, parseInt(s,10)));
+      }
+
+      if (r && (r === "48" || r === "AK" || r === "HI")) {
+        regionEl.value = r;
+      }
+
+      suppressUrlSync = false;
+      lastEdited = null;
+    }
+
+    function regionLabelFromValue(v){
+      if (v === "AK") return "Alaska";
+      if (v === "HI") return "Hawaii";
+      return "48 States + DC";
+    }
+
+    function updateSummary({
+      annualIncome, monthlyIncome, size, regionLabel,
+      fplPct, between200and400,
+      mfiPct, below80, mfiBand
+    }){
+      summaryBoxEl.style.display = "block";
+      sumIncomeAnnualEl.textContent = Number.isFinite(annualIncome) ? fmtMoney(annualIncome) : "—";
+      sumIncomeMonthlyEl.textContent = Number.isFinite(monthlyIncome) ? fmtMoney(monthlyIncome) : "—";
+      sumSizeEl.textContent = String(Math.floor(size));
+      sumFplRegionEl.textContent = regionLabel;
+
+      sumFplPctEl.textContent = Number.isFinite(fplPct) ? (fplPct.toFixed(1) + "%") : "—";
+      sumFplBandTestEl.textContent = between200and400 ? "YES" : "NO";
+
+      sumMfiPctEl.textContent = Number.isFinite(mfiPct) ? (mfiPct.toFixed(1) + "%") : "—";
+      sumMfiBelow80El.textContent = below80 ? "YES" : "NO";
+      sumMfiBandEl.textContent = mfiBand || "—";
+    }
+
+    function update(){
+      errorEl.style.display="none";
+      errorEl.textContent="";
+
+      const size = Number(sizeEl.value);
+      const region = regionEl.value;
+      const incomeAnnualForCalc = getAnnualIncomeForCalc();
+
+      scheduleUrlSync();
+
+      if (!Number.isFinite(size) || size < 1){
+        if (String(sizeEl.value).trim() === "") {
+          resetOutputs();
+          return;
+        }
+        errorEl.textContent="Household size must be 1 or more.";
+        errorEl.style.display="block";
+        resetOutputs();
+        return;
+      }
+
+      if (!Number.isFinite(incomeAnnualForCalc) || incomeAnnualForCalc < 0){
+        resetOutputs();
+        return;
+      }
+
+      // FPL
+      const fpl100 = getFPL100(region,size);
+      const fplPct = (incomeAnnualForCalc / fpl100) * 100;
+
+      fplPctEl.textContent = fplPct.toFixed(1) + "%";
+      fplDetailEl.textContent = `100% FPL for size ${Math.floor(size)}: ${fmtMoney(fpl100)}.`;
+
+      const between200and400 = (fplPct >= 200 && fplPct <= 400);
+      fplRangeBoxEl.style.display = "block";
+      fplRangeBoxEl.className = "callout " + (between200and400 ? "ok" : "bad");
+      fplRangeBoxEl.textContent = between200and400
+        ? "Between 200–400% of FPL? YES"
+        : "Between 200–400% of FPL? NO";
+
+      // MFI
+      const mfi = getMFI(size);
+      if (!mfi){
+        mfiPctEl.textContent="—";
+        mfiDetailEl.textContent="MFI table is available for household sizes 1–8.";
+        mfiCalloutEl.style.display="none";
+        mfiBandOnlyEl.style.display="none";
+
+        updateSummary({
+          annualIncome: incomeAnnualForCalc,
+          monthlyIncome: incomeAnnualForCalc / 12,
+          size,
+          regionLabel: regionLabelFromValue(region),
+          fplPct,
+          between200and400,
+          mfiPct: NaN,
+          below80: false,
+          mfiBand: "—"
+        });
+        return;
+      }
+
+      const pctMFI = (incomeAnnualForCalc / mfi.p100) * 100;
+
+      mfiPctEl.textContent = pctMFI.toFixed(1) + "%";
+      mfiDetailEl.textContent = `80% MFI cap for size ${Math.floor(size)}: ${fmtMoney(mfi.p80)}.`;
+
+      const below80 = incomeAnnualForCalc <= mfi.p80;
+      mfiCalloutEl.style.display="block";
+      mfiCalloutEl.className = "callout " + (below80 ? "ok" : "bad");
+      mfiCalloutEl.textContent = below80
+        ? "Below 80% of MFI? YES"
+        : "Below 80% of MFI? NO";
+
+      const band = getGrantBand(pctMFI);
+      mfiBandOnlyEl.style.display="block";
+      mfiBandOnlyEl.className = "callout";
+      mfiBandOnlyEl.textContent = "MFI band: " + band;
+
+      updateSummary({
+        annualIncome: incomeAnnualForCalc,
+        monthlyIncome: incomeAnnualForCalc / 12,
+        size,
+        regionLabel: regionLabelFromValue(region),
+        fplPct,
+        between200and400,
+        mfiPct: pctMFI,
+        below80,
+        mfiBand: band
+      });
+    }
+
+    // Events
+    incomeAnnualEl.addEventListener("input", (e) => {
+      lastEdited = "annual";
+      formatCurrencyInput(e.target);
+      syncIncomeFields();
+      update();
+    });
+
+    incomeMonthlyEl.addEventListener("input", (e) => {
+      lastEdited = "monthly";
+      formatCurrencyInput(e.target);
+      syncIncomeFields();
+      update();
+    });
+
+    sizeEl.addEventListener("input", update);
+    regionEl.addEventListener("change", update);
+
+    clearBtn.addEventListener("click", () => {
+      suppressUrlSync = true;
+
+      incomeAnnualEl.value = "";
+      incomeMonthlyEl.value = "";
+      sizeEl.value = "";
+      regionEl.value = "48";
+      lastEdited = null;
+
+      errorEl.style.display = "none";
+      errorEl.textContent = "";
+      resetOutputs();
+
+      try{
+        const u = new URL(window.location.href);
+        u.search = "";
+        window.history.replaceState({}, "", u.toString());
+      }catch(e){}
+
+      suppressUrlSync = false;
+      incomeAnnualEl.focus();
+    });
+
+    printBtn.addEventListener("click", () => window.print());
+
+    copyLinkBtn.addEventListener("click", async () => {
+      const url = buildShareUrl();
+      try{
+        await navigator.clipboard.writeText(url);
+        showToast("Link copied.");
+      }catch(e){
+        const ta = document.createElement("textarea");
+        ta.value = url;
+        document.body.appendChild(ta);
+        ta.select();
+        try{ document.execCommand("copy"); showToast("Link copied."); }
+        catch(e2){ showToast("Could not copy automatically. You can copy from the address bar."); }
+        document.body.removeChild(ta);
+      }
+    });
+
+    // Init
+    resetOutputs();
+    loadFromUrl();
+    update();
+  </script>
+</body>
+</html>

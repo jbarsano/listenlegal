@@ -267,17 +267,6 @@ const annual=document.getElementById("incomeAnnual");
 const monthly=document.getElementById("incomeMonthly");
 const size=document.getElementById("size");
 const region=document.getElementById("region");
-
-/* analytics state */
-let useTimer = null;
-let lastUseSignature = "";
-
-/* helper */
-function trackEvent(name, params = {}) {
-  if (typeof gtag === "function") {
-    gtag("event", name, params);
-  }
-}
   
 const copyLinkBtn = document.getElementById("copyLinkBtn");
 const toastEl = document.getElementById("toast");
@@ -294,6 +283,10 @@ function showToast(msg){
 let suppressUrlSync = false;
 let urlSyncTimer = null;
 
+// analytics debounce state (GLOBAL)
+let useTimer = null;
+let lastUseSignature = "";
+  
 function num(v){return Number(String(v).replace(/[^0-9.]/g,""))}
 function money(n){return "$"+Math.round(n).toLocaleString()}
 
@@ -413,16 +406,8 @@ function update(){
   const s=parseInt(size.value);
   if(!inc||!s)return;
 
-  /* analytics state (ADD HERE) */
-let useTimer = null;
-let lastUseSignature = "";
 
-/* helper */
-function trackEvent(name, params = {}) {
-  if (typeof gtag === "function") {
-    gtag("event", name, params);
-  }
-}
+
   
   const fpl=FPL_100[region.value][Math.min(s,8)-1];
   const fplPct=inc/fpl*100;
@@ -439,6 +424,22 @@ ${money(inc)} ÷ ${money(fpl)} × 100 = ${fplPct.toFixed(1)}%">i</span>`;
 
   if(!MFI[s])return;
   const mfiPct=inc/MFI[s].p100*100;
+
+  // --- analytics: debounced "tool_used" (only when BOTH FPL + MFI are computed) ---
+const signature = `${Math.round(inc)}|${s}|${region.value}|${mfiPct.toFixed(1)}|${fplPct.toFixed(1)}`;
+
+if (signature !== lastUseSignature) {
+  window.clearTimeout(useTimer);
+  useTimer = window.setTimeout(() => {
+    trackEvent("tool_used", {
+      tool: "fpl_mfi_calculator",
+      region: region.value,
+      household_size: s
+    });
+    lastUseSignature = signature;
+  }, 800);
+}
+  
   document.getElementById("mfiPct").textContent=mfiPct.toFixed(1)+"%";
   document.getElementById("mfiDetail").innerHTML =
 `Calculation <span class="info" data-tip="The Area Median Income (AMI/MFI) for this household size is ${money(MFI[s].p100)}.
@@ -513,5 +514,6 @@ update();
 </script>
 </body>
 </html>
+
 
 

@@ -5,20 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Income Screening Tool (FPL + MFI)</title>
 
-  <!-- Google tag (gtag.js) -->
+<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LWXCCNB3Y2"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
+  function gtag(){ dataLayer.push(arguments); }
   gtag('js', new Date());
-
   gtag('config', 'G-LWXCCNB3Y2');
 
+  // Safe helper: won't throw if gtag isn't ready yet
   function trackEvent(name, params = {}) {
-  if (typeof gtag === "function") {
-    gtag("event", name, params);
+    if (typeof gtag === "function") {
+      gtag("event", name, params);
+    }
   }
-}
 </script>
 
 <style>
@@ -52,7 +52,6 @@ h1{margin:0;font-size:22px}
 .subhead{margin:0 0 16px;color:var(--muted);font-size:14px}
 
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:0 10px 24px rgba(17,24,39,0.06)}
-
 
 .toast{
   display:none;
@@ -176,7 +175,6 @@ input,select{width:100%;padding:10px 12px;border-radius:12px;border:1px solid va
 
   <div class="card">
 
-    
     <div id="toast" class="toast"></div>
 
     <div class="inputs-grid">
@@ -267,10 +265,9 @@ const annual=document.getElementById("incomeAnnual");
 const monthly=document.getElementById("incomeMonthly");
 const size=document.getElementById("size");
 const region=document.getElementById("region");
-  
+
 const copyLinkBtn = document.getElementById("copyLinkBtn");
 const toastEl = document.getElementById("toast");
-
 
 function showToast(msg){
   toastEl.textContent = msg;
@@ -279,17 +276,15 @@ function showToast(msg){
   showToast._t = window.setTimeout(()=>{ toastEl.style.display="none"; }, 1800);
 }
 
-
 let suppressUrlSync = false;
 let urlSyncTimer = null;
 
 // analytics debounce state (GLOBAL)
 let useTimer = null;
 let lastUseSignature = "";
-  
+
 function num(v){return Number(String(v).replace(/[^0-9.]/g,""))}
 function money(n){return "$"+Math.round(n).toLocaleString()}
-
 
 function getShareState(){
   const a = num(annual.value);
@@ -352,7 +347,6 @@ function loadFromUrl(){
   suppressUrlSync = false;
 }
 
-
 function formatCurrencyInput(el){
   let value = el.value.replace(/[^0-9.]/g,"");
   if(value===""){ el.value=""; return; }
@@ -363,7 +357,6 @@ function formatCurrencyInput(el){
 
   el.value = intPart + decPart;
 }
-
 
 let syncing=false;
 function sync(from){
@@ -386,7 +379,6 @@ function sync(from){
   update();
 }
 
-
 annual.oninput=()=>{
   formatCurrencyInput(annual);
   sync("a");
@@ -399,16 +391,12 @@ monthly.oninput=()=>{
 size.oninput=region.onchange=update;
 
 function update(){
-
   scheduleUrlSync();
 
   const inc=num(annual.value)||num(monthly.value)*12;
   const s=parseInt(size.value);
-  if(!inc||!s)return;
+  if(!inc||!s) return;
 
-
-
-  
   const fpl=FPL_100[region.value][Math.min(s,8)-1];
   const fplPct=inc/fpl*100;
   document.getElementById("fplPct").textContent=fplPct.toFixed(1)+"%";
@@ -422,24 +410,23 @@ ${money(inc)} ÷ ${money(fpl)} × 100 = ${fplPct.toFixed(1)}%">i</span>`;
   fplBox.className="callout "+(fplPct>=200&&fplPct<=400?"ok":"bad");
   fplBox.textContent=`Between 200–400% of FPL? ${(fplPct>=200&&fplPct<=400)?"YES":"NO"}`;
 
-  if(!MFI[s])return;
+  if(!MFI[s]) return;
   const mfiPct=inc/MFI[s].p100*100;
 
-  // --- analytics: debounced "tool_used" (only when BOTH FPL + MFI are computed) ---
-const signature = `${Math.round(inc)}|${s}|${region.value}|${mfiPct.toFixed(1)}|${fplPct.toFixed(1)}`;
+  // analytics: debounced tool_used (fires only when BOTH are computed)
+  const signature = `${Math.round(inc)}|${s}|${region.value}|${mfiPct.toFixed(1)}|${fplPct.toFixed(1)}`;
+  if (signature !== lastUseSignature) {
+    window.clearTimeout(useTimer);
+    useTimer = window.setTimeout(() => {
+      trackEvent("tool_used", {
+        tool: "fpl_mfi_calculator",
+        region: region.value,
+        household_size: s
+      });
+      lastUseSignature = signature;
+    }, 800);
+  }
 
-if (signature !== lastUseSignature) {
-  window.clearTimeout(useTimer);
-  useTimer = window.setTimeout(() => {
-    trackEvent("tool_used", {
-      tool: "fpl_mfi_calculator",
-      region: region.value,
-      household_size: s
-    });
-    lastUseSignature = signature;
-  }, 800);
-}
-  
   document.getElementById("mfiPct").textContent=mfiPct.toFixed(1)+"%";
   document.getElementById("mfiDetail").innerHTML =
 `Calculation <span class="info" data-tip="The Area Median Income (AMI/MFI) for this household size is ${money(MFI[s].p100)}.
@@ -476,11 +463,17 @@ document.getElementById("clearBtn").onclick=()=>{
   suppressUrlSync = false;
   update();
 };
-document.getElementById("printBtn").onclick=()=>window.print();
 
+document.getElementById("printBtn").onclick=()=>{
+  trackEvent("tool_printed", { tool: "fpl_mfi_calculator" });
+  window.print();
+};
 
+// Share result (copy URL with params) + track
 copyLinkBtn.addEventListener("click", async () => {
   const url = buildShareUrl();
+  trackEvent("result_shared", { tool: "fpl_mfi_calculator", method: "copy" });
+
   try{
     await navigator.clipboard.writeText(url);
     showToast("Link copied.");
@@ -495,25 +488,25 @@ copyLinkBtn.addEventListener("click", async () => {
   }
 });
 
+// Share this tool (native share if possible; otherwise copy) + track
 document.getElementById("shareBtn").onclick = async () => {
-  const url = buildShareUrl(); // uses same share URL
+  const url = buildShareUrl();
+
   if (navigator.share) {
     try {
       await navigator.share({ title: "Income Screening Tool", url });
+      trackEvent("tool_shared", { tool: "fpl_mfi_calculator", method: "native_share" });
       return;
     } catch(e) { /* user cancelled; do nothing */ }
   }
-  // fallback: copy link (keep alert behavior)
+
   await navigator.clipboard.writeText(url);
+  trackEvent("tool_shared", { tool: "fpl_mfi_calculator", method: "copy_fallback" });
   alert("Link copied.");
 };
-
 
 loadFromUrl();
 update();
 </script>
 </body>
 </html>
-
-
-

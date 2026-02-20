@@ -1,11 +1,21 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=/tools/">
-<title>Redirecting...</title>
+  <meta charset="utf-8" />
+  <title>Redirecting…</title>
+
+  <!-- Fallback redirect (no JS) -->
+  <meta http-equiv="refresh" content="0; url=/tools/index.html">
+
+  <script>
+    // Preferred redirect (avoids history + handles odd folder routing)
+    window.location.replace("/tools/index.html");
+  </script>
 </head>
 <body>
-Redirecting...
+  Redirecting…
+  <noscript>
+    <p><a href="/tools/index.html">Continue to Tools</a></p>
+  </noscript>
 </body>
 </html>

@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Income Screening Tool</title>
 
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-LWXCCNB3Y2"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -13,7 +12,6 @@
   gtag('js', new Date());
   gtag('config', 'G-LWXCCNB3Y2');
 
-  // Safe helper: won't throw if gtag isn't ready yet
   function trackEvent(name, params = {}) {
     if (typeof gtag === "function") {
       gtag("event", name, params);
@@ -42,7 +40,6 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
 
-/* ---- top app bar ---- */
 .appbar{
   background:var(--topbar);
   color:#fff;
@@ -67,7 +64,6 @@ body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-s
   .appbar .env .label{display:none}
 }
 
-/* ---- toolbar ---- */
 .toolbar{
   background:#fff;border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
@@ -115,8 +111,6 @@ body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-s
 .tbtn.primary svg,.tbtn.primary{color:var(--accent);stroke:var(--accent)}
 .tbtn.primary svg{stroke:var(--accent)}
 
-/* Below 640px: drop button text labels (icon + tooltip only) so the toolbar
-   never has to wrap or overflow on phone widths. */
 @media(max-width:640px){
   .toolbar{gap:10px}
   .toolbar .spacer{display:none}
@@ -127,7 +121,6 @@ body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-s
   }
 }
 
-/* ---- canvas ---- */
 .canvas{
   background-color:var(--bg);
   background-image:radial-gradient(var(--dot) 1px, transparent 1px);
@@ -220,21 +213,27 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
 .copy-btn:hover{background:#f3f2f1;color:var(--text)}
 .copy-btn svg{width:14px;height:14px}
 .currency .copy-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+.callout.with-copy{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .big-row{display:flex;align-items:center;gap:6px}
 .right-group{display:flex;align-items:center;gap:8px}
 
 .big{font-size:26px;font-weight:700;color:var(--text)}
 .line{color:var(--muted);font-size:12.5px;margin-top:2px}
 .callout{margin-top:10px;padding:8px 12px;border-radius:4px;border:1px solid var(--border);background:#f3f2f1;font-size:12.5px;font-weight:600}
-
-.answer-text{
-  margin-top:10px;padding:8px 12px;border-radius:4px;border:1px solid var(--border);background:#f3f2f1;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-  font-size:12.5px;font-weight:600;color:var(--text);
+.screen{
+  width:100%;margin-top:20px;padding:12px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  font-size:14px;
 }
-.answer-badge{font-size:12.5px;font-weight:700;color:#000;padding:2px 9px;border-radius:3px}
-.answer-badge.ok{background:#00ff00}
-.answer-badge.bad{background:#ffff00}
+.screen .screen-label{color:var(--muted);font-size:12.5px;font-weight:600}
+.screen .screen-value{font-weight:700}
+.screen .screen-note{width:100%;font-size:11.5px;font-weight:400;color:var(--muted)}
+.screen.ok{background:#00ff00;border-color:#00ff00;color:#000}
+.screen.ok .screen-label,.screen.ok .screen-note{color:#000}
+.screen.check{background:#ffff00;border-color:#ffff00;color:#000}
+.screen.check .screen-label,.screen.check .screen-note{color:#000}
+.screen.no{background:var(--badbg);border-color:var(--badbd);color:var(--badtext)}
+.screen.no .screen-label,.screen.no .screen-note{color:var(--badtext)}
 
 .info{
   display:inline-block;
@@ -243,15 +242,19 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
   font-size:11px;line-height:14px;text-align:center;font-weight:700;cursor:default;
 }
 .info.corner{position:absolute;top:14px;right:16px}
-.info:hover::after{
-  content:attr(data-tip);position:absolute;top:130%;right:0;
+.info.flag{background:#ffff00;border-color:#d9d000;color:#000}
+.info .tip{
+  display:none;position:absolute;top:130%;right:0;
   background:#201f1e;color:#fff;padding:8px 10px;border-radius:4px;
-  font-size:12px;width:min(240px, calc(100vw - 40px));text-align:left;white-space:pre-line;z-index:50;
+  font-size:12px;font-weight:400;line-height:1.4;width:min(340px, calc(100vw - 40px));text-align:left;white-space:pre-line;z-index:50;
 }
-.info:hover::before{
-  content:"";position:absolute;top:118%;right:4px;
+.info .tip::before{
+  content:"";position:absolute;bottom:100%;right:4px;
   border:6px solid transparent;border-bottom-color:#201f1e;
 }
+.info:hover .tip,.info.open .tip{display:block}
+.tip-note{margin-top:10px;padding:6px 0 2px 10px;border-left:4px solid #ffff00}
+.tip-note b{display:block;color:#ffff00;margin-bottom:2px}
 
 .actions-strip{
   margin-top:26px;width:100%;
@@ -304,7 +307,6 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
 .step-card.inactive .line{font-style:italic}
 .step-card.inactive .copy-btn{display:none}
 
-/* decorative zoom controls, bottom-left of canvas, matching the flow editor chrome */
 .zoom-controls{
   position:absolute;left:20px;bottom:24px;
   display:flex;flex-direction:column;
@@ -432,7 +434,7 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
           <div>
             <div class="step-title">Federal Poverty Level<a href="#src-fpl" class="fn">1</a></div>
           </div>
-          <span class="info corner" id="fplInfo" data-tip="" style="display:none">i</span>
+          <span class="info corner" id="fplInfo" style="display:none">i<span class="tip" id="fplTip"></span></span>
         </div>
         <div class="step-body">
           <div class="big-row">
@@ -442,10 +444,8 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
             </button>
           </div>
           <div class="line" id="fplDetail">Enter household details.</div>
-          <div id="fplRangeBox" class="answer-text" style="display:none">
-            <span>Between 200–400% of FPL?</span>
-            <span id="fplRangeAnswer" class="answer-badge"></span>
-          </div>
+          <div id="fplBandOnly" class="callout" style="display:none"></div>
+          <div id="fplReported" class="callout with-copy" style="display:none"><span id="fplReportedText"></span><button class="copy-btn" data-copy-attr="fplReported" type="button" aria-label="Copy FPL band"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
         </div>
       </div>
 
@@ -455,7 +455,7 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
           <div>
             <div class="step-title">Median Family Income<a href="#src-mfi" class="fn">2</a></div>
           </div>
-          <span class="info corner" id="mfiInfo" data-tip="" style="display:none">i</span>
+          <span class="info corner" id="mfiInfo" style="display:none">i<span class="tip" id="mfiTip"></span></span>
         </div>
         <div class="step-body">
           <div class="big-row">
@@ -465,13 +465,16 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
             </button>
           </div>
           <div class="line" id="mfiDetail">Enter household details.</div>
-          <div id="mfiCallout" class="answer-text" style="display:none">
-            <span>Below 80% of MFI?</span>
-            <span id="mfiCalloutAnswer" class="answer-badge"></span>
-          </div>
           <div id="mfiBandOnly" class="callout" style="display:none"></div>
+          <div id="mfiReported" class="callout with-copy" style="display:none"><span id="mfiReportedText"></span><button class="copy-btn" data-copy-attr="mfiReported" type="button" aria-label="Copy MFI band"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button></div>
         </div>
       </div>
+    </div>
+
+    <div id="screenLine" class="callout screen" style="display:none">
+      <span class="screen-label">Screening result</span>
+      <span class="screen-value" id="screenValue"></span>
+      <span class="screen-note" id="screenNote" style="display:none"></span>
     </div>
 
     <div class="actions-strip">
@@ -496,6 +499,71 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
 
 <script>
 const FPL_100={"48":[15960,21640,27320,33000,38680,44360,50040,55720],"AK":[19950,27050,34150,41250,48350,55450,62550,69650],"HI":[18360,24890,31420,37950,44480,51010,57540,64070]};
+const FPL_EXTRA={"48":5680,"AK":7100,"HI":6530};
+function fplFor(regionKey,s){
+  const table=FPL_100[regionKey];
+  return s<=8 ? table[s-1] : table[7]+(s-8)*FPL_EXTRA[regionKey];
+}
+const MFI_MAX_SIZE=8;
+const FPL_TIERS=[50,75,100,125,130,133,135,138,150,175,180,185,200,225,250,275,300,325,350,375,400,500,600,700];
+function fplChartBand(pct){
+  if(pct<FPL_TIERS[0]) return "Under "+FPL_TIERS[0]+"%";
+  for(let i=0;i<FPL_TIERS.length-1;i++){
+    if(pct>=FPL_TIERS[i] && pct<FPL_TIERS[i+1]) return FPL_TIERS[i]+" – "+FPL_TIERS[i+1]+"%";
+  }
+  return "Over "+FPL_TIERS[FPL_TIERS.length-1]+"%";
+}
+
+const ELIGIBILITY={
+  fplReporting:[
+    {key:"under200", label:"Under 200%", min:0},
+    {key:"200to299", label:"200 – 299%",   min:200},
+    {key:"300to400", label:"300 – 400%",   min:300, maxInclusive:400},
+    {key:"over400",  label:"Over 400%",  min:400}
+  ],
+  mfiCap:{ basis:"published", percent:80 },
+  mfiReported:{ under:"Under 80%", at:"At 80%", over:"Over 80%", atTolerance:0.005 },
+  outcomes:[
+    {fpl:"under200",                 label:"Under 200% FPL",                          status:"check"},
+    {fpl:"200to299",                 label:"200–299% FPL",                                                        status:"ok"},
+    {fpl:"300to400",                 label:"300–400% FPL",                                                        status:"ok"},
+    {fpl:"over400", underCap:true,   label:"Over 400% FPL, but at or under 80% MFI",  status:"check"},
+    {fpl:"over400", underCap:false,  label:"Over 400% FPL and over 80% MFI",                                      status:"no"}
+  ],
+  noMfi:{ note:"MFI not available for households over "+MFI_MAX_SIZE+" people; result based on FPL only.",
+          over400:{label:"Over 400% FPL (MFI not available)", status:"check"} }
+};
+
+function fplReportingFor(pct){
+  const bands=ELIGIBILITY.fplReporting;
+  let hit=bands[0];
+  for(const b of bands){
+    if(pct>=b.min) hit=b;
+    if(b.maxInclusive!==undefined && pct<=b.maxInclusive && pct>=b.min){ hit=b; break; }
+  }
+  return hit;
+}
+function capFigure(s){
+  const cap=ELIGIBILITY.mfiCap;
+  return cap.basis==="published" ? MFI[s].p80 : MFI[s].p100*cap.percent/100;
+}
+function underMfiCap(inc,s){ return inc<=capFigure(s); }
+function reportedMfiBand(inc,s){
+  const r=ELIGIBILITY.mfiReported;
+  const ratio=inc/capFigure(s);
+  if(ratio>1) return r.over;
+  if(ratio>=1-r.atTolerance) return r.at;
+  return r.under;
+}
+function screeningOutcome(bandKey,underCap){
+  for(const o of ELIGIBILITY.outcomes){
+    const keys=Array.isArray(o.fpl)?o.fpl:[o.fpl];
+    if(!keys.includes(bandKey)) continue;
+    if(o.underCap!==undefined && o.underCap!==underCap) continue;
+    return o;
+  }
+  return null;
+}
 const MFI={1:{p80:91800,p100:114750},2:{p80:104900,p100:131100},3:{p80:118000,p100:147500},4:{p80:131000,p100:163900},5:{p80:141600,p100:180300},6:{p80:152100,p100:196700},7:{p80:162600,p100:213050},8:{p80:173100,p100:229450}};
 
 const annual=document.getElementById("incomeAnnual");
@@ -511,13 +579,23 @@ function showToast(msg){
   showToast._t=window.setTimeout(()=>{toastEl.style.display="none";},1800);
 }
 
+function setTip(id,text,note){
+  const el=document.getElementById(id);
+  el.textContent=text;
+  if(note){
+    const n=document.createElement("div");
+    n.className="tip-note";
+    const h=document.createElement("b"); h.textContent="Why these differ";
+    n.appendChild(h); n.appendChild(document.createTextNode(note));
+    el.appendChild(n);
+  }
+}
 function num(v){return Number(String(v).replace(/[^0-9.]/g,""))}
 function money(n){return "$"+Math.round(n).toLocaleString()}
 
 let suppressUrlSync = false;
 let urlSyncTimer = null;
 
-// analytics debounce state (GLOBAL)
 let useTimer = null;
 let lastUseSignature = "";
 
@@ -572,7 +650,6 @@ function loadFromUrl(){
   if (a && /^\d+(\.\d+)?$/.test(a)) {
     annual.value = Number(a).toLocaleString();
     formatCurrencyInput(annual);
-    // sync monthly so the UI matches
     monthly.value = (Number(a)/12).toFixed(2);
     formatCurrencyInput(monthly);
   }
@@ -627,31 +704,48 @@ function update(){
   if(!inc||!s){
     fplCard.classList.add("inactive");
     mfiCard.classList.add("inactive");
+    document.getElementById("screenLine").style.display="none";
     return;
   }
   fplCard.classList.remove("inactive");
   mfiCard.classList.remove("inactive");
 
-  const fpl=FPL_100[region.value][Math.min(s,8)-1];
+  const fpl=fplFor(region.value,s);
   const fplPct=inc/fpl*100;
   document.getElementById("fplPct").textContent=fplPct.toFixed(1)+"%";
   document.getElementById("fplDetail").innerHTML="";
   const fplInfo=document.getElementById("fplInfo");
   fplInfo.style.display="inline-block";
-  fplInfo.setAttribute("data-tip",`The government's baseline income for a household this size is ${money(fpl)}. Eligibility is calculated as a percentage of this number.
+  const extraNote = s>8 ? ` (the 8-person figure plus ${money(FPL_EXTRA[region.value])} for each additional person)` : "";
+  setTip("fplTip",`The federal poverty guideline for a household this size is ${money(fpl)} (HHS, 2026)${extraNote}. That is the 100% baseline; income is shown as a percentage of it. Calculation: ${money(inc)} ÷ ${money(fpl)} × 100 = ${fplPct.toFixed(1)}%
 
-Calculation:
-${money(inc)} ÷ ${money(fpl)} × 100 = ${fplPct.toFixed(1)}%`);
-  const fplBox=document.getElementById("fplRangeBox");
-  fplBox.style.display="flex";
-  const fplAns=document.getElementById("fplRangeAnswer");
-  fplAns.className="answer-badge "+(fplPct>=200&&fplPct<=400?"ok":"bad");
-  fplAns.textContent=(fplPct>=200&&fplPct<=400)?"YES":"NO";
+Interval: where that percent falls on the HHS poverty guidelines chart.
+FPL band: Under 200%, 200 – 299%, 300 – 400%, or Over 400%, based on that percent.`, "");
+  const fplBand=fplReportingFor(fplPct);
+  const fplBandBox=document.getElementById("fplBandOnly");
+  fplBandBox.style.display="block";
+  fplBandBox.textContent="Interval: "+fplChartBand(fplPct);
+  const fplRep=document.getElementById("fplReported");
+  fplRep.style.display="flex";
+  document.getElementById("fplReportedText").textContent="FPL band: "+fplBand.label;
+  fplRep.dataset.copy=fplBand.label;
+  document.getElementById("fplPct").dataset.copy=String(Math.round(fplPct));
 
-  if(!MFI[s])return;
+  if(!MFI[s]){
+    document.getElementById("mfiPct").textContent="—";
+    delete document.getElementById("mfiPct").dataset.copy;
+    document.getElementById("mfiDetail").textContent=`The DC MFI schedule covers households up to ${MFI_MAX_SIZE} people. Enter a household size of ${MFI_MAX_SIZE} or fewer to see MFI.`;
+    document.getElementById("mfiInfo").style.display="none";
+    document.getElementById("mfiInfo").classList.remove("flag");
+    document.getElementById("mfiBandOnly").style.display="none";
+    document.getElementById("mfiReported").style.display="none";
+    let o=screeningOutcome(fplBand.key,undefined);
+    if(!o) o=ELIGIBILITY.noMfi.over400;
+    showScreening(o, ELIGIBILITY.noMfi.note);
+    return;
+  }
   const mfiPct=inc/MFI[s].p100*100;
 
-  // analytics: debounced tool_used (fires only when BOTH are computed)
   const signature = `${Math.round(inc)}|${s}|${region.value}|${mfiPct.toFixed(1)}|${fplPct.toFixed(1)}`;
   if (signature !== lastUseSignature) {
     window.clearTimeout(useTimer);
@@ -669,31 +763,50 @@ ${money(inc)} ÷ ${money(fpl)} × 100 = ${fplPct.toFixed(1)}%`);
   document.getElementById("mfiDetail").innerHTML="";
   const mfiInfo=document.getElementById("mfiInfo");
   mfiInfo.style.display="inline-block";
-  mfiInfo.setAttribute("data-tip",`The Area Median Income (AMI/MFI) for this household size is ${money(MFI[s].p100)}.
+  const below=underMfiCap(inc,s);
+  const pct1=Math.round(mfiPct*10)/10;
+  const mfiRepVal=reportedMfiBand(inc,s);
+  const disagree=(below && pct1>80) || (!below && pct1<80) || (mfiRepVal===ELIGIBILITY.mfiReported.at && pct1!==80);
+  const capWord = inc>MFI[s].p80 ? "above" : (mfiRepVal===ELIGIBILITY.mfiReported.at ? "at or just under" : "below");
+  setTip("mfiTip",`The median family income for a household this size is ${money(MFI[s].p100)} (DHCD, 2026). That is the 100% baseline; income is shown as a percentage of it. Calculation: ${money(inc)} ÷ ${money(MFI[s].p100)} × 100 = ${mfiPct.toFixed(1)}%
 
-80% MFI threshold: ${money(MFI[s].p80)}
+DHCD also publishes an 80% figure for this household size, ${money(MFI[s].p80)}, which sets the MFI band. Calculation: ${money(inc)} is ${capWord} the 80% figure of ${money(MFI[s].p80)}, so ${mfiRepVal}
 
-Calculation:
-${money(inc)} ÷ ${money(MFI[s].p100)} × 100 = ${mfiPct.toFixed(1)}%`);
-
-  const below=inc<=MFI[s].p80;
-  const mfiCall=document.getElementById("mfiCallout");
-  mfiCall.style.display="flex";
-  const mfiAns=document.getElementById("mfiCalloutAnswer");
-  mfiAns.className="answer-badge "+(below?"ok":"bad");
-  mfiAns.textContent=below?"YES":"NO";
+Interval: where that percent falls on the DHCD schedule.
+MFI band: Under 80% when income is below the published 80% figure; At 80% when it is at or just under that figure (within half a percent); Over 80% when it is above it.`, disagree?`DHCD's published 80% figure is not always exactly 80% of the 100% figure, so for larger households (currently 5 or more people) the interval and the MFI band can differ. The MFI band follows the published figure.`:"");
+  mfiInfo.classList.toggle("flag", disagree);
 
   let band="Over 120%";
-  if(mfiPct<30)band="0–30%";
-  else if(mfiPct<50)band="30–50%";
-  else if(mfiPct<60)band="50–60%";
-  else if(mfiPct<80)band="60–80%";
-  else if(mfiPct<100)band="80–100%";
-  else if(mfiPct<120)band="100–120%";
+  if(mfiPct<30)band="Under 30%";
+  else if(mfiPct<50)band="30 – 50%";
+  else if(mfiPct<60)band="50 – 60%";
+  else if(mfiPct<80)band="60 – 80%";
+  else if(mfiPct<100)band="80 – 100%";
+  else if(mfiPct<120)band="100 – 120%";
 
   const bandBox=document.getElementById("mfiBandOnly");
   bandBox.style.display="block";
-  bandBox.textContent="MFI Band: "+band;
+  bandBox.textContent="Interval: "+band;
+
+  const rep=document.getElementById("mfiReported");
+  rep.style.display="flex";
+  document.getElementById("mfiReportedText").textContent="MFI band: "+mfiRepVal;
+  rep.dataset.copy=mfiRepVal;
+  document.getElementById("mfiPct").dataset.copy=String(Math.round(mfiPct));
+
+  showScreening(screeningOutcome(fplBand.key,below), "");
+}
+
+function showScreening(outcome,note){
+  const line=document.getElementById("screenLine");
+  const val=document.getElementById("screenValue");
+  const noteEl=document.getElementById("screenNote");
+  if(!outcome){ line.style.display="none"; return; }
+  line.style.display="flex";
+  line.className="callout screen "+(outcome.status||"check");
+  val.textContent=outcome.label;
+  noteEl.textContent=note||"";
+  noteEl.style.display=note?"block":"none";
 }
 
 function clearAll(){
@@ -704,13 +817,18 @@ function clearAll(){
   suppressUrlSync = false;
   document.getElementById("fplPct").textContent="—";
   document.getElementById("mfiPct").textContent="—";
+  delete document.getElementById("fplPct").dataset.copy;
+  delete document.getElementById("mfiPct").dataset.copy;
   document.getElementById("fplDetail").textContent="Enter household details.";
   document.getElementById("mfiDetail").textContent="Enter household details.";
-  document.getElementById("fplRangeBox").style.display="none";
-  document.getElementById("mfiCallout").style.display="none";
+  document.getElementById("fplBandOnly").style.display="none";
+  document.getElementById("fplReported").style.display="none";
   document.getElementById("mfiBandOnly").style.display="none";
+  document.getElementById("mfiReported").style.display="none";
+  document.getElementById("screenLine").style.display="none";
   document.getElementById("fplInfo").style.display="none";
   document.getElementById("mfiInfo").style.display="none";
+  document.getElementById("mfiInfo").classList.remove("flag");
   document.getElementById("fplCard").classList.add("inactive");
   document.getElementById("mfiCard").classList.add("inactive");
 }
@@ -747,7 +865,7 @@ document.getElementById("shareBtn").onclick = async () => {
       await navigator.share({ title: "Income Screening Tool", url });
       trackEvent("tool_shared", { tool: "fpl_mfi_calculator", method: "native_share" });
       return;
-    } catch(e) { /* user cancelled; do nothing */ }
+    } catch(e) {}
   }
   try{
     await navigator.clipboard.writeText(url);
@@ -771,16 +889,29 @@ titleTap.addEventListener("click",(e)=>{
 });
 document.addEventListener("click",()=>titlePopup.classList.remove("show"));
 
+document.querySelectorAll(".info").forEach(el=>{
+  el.addEventListener("click",(e)=>{
+    e.stopPropagation();
+    const wasOpen=el.classList.contains("open");
+    document.querySelectorAll(".info.open").forEach(o=>o.classList.remove("open"));
+    if(!wasOpen) el.classList.add("open");
+  });
+});
+document.addEventListener("click",()=>document.querySelectorAll(".info.open").forEach(o=>o.classList.remove("open")));
+
 document.querySelectorAll(".copy-btn").forEach(btn=>{
   btn.addEventListener("click", async (e)=>{
     e.stopPropagation();
     let text="";
     if(btn.dataset.copyInput){
-      text="$"+document.getElementById(btn.dataset.copyInput).value;
+      const v=num(document.getElementById(btn.dataset.copyInput).value);
+      text=v?String(Math.round(v*100)/100):"";
     }else if(btn.dataset.copyTextId){
-      text=document.getElementById(btn.dataset.copyTextId).textContent;
+      text=document.getElementById(btn.dataset.copyTextId).dataset.copy||"";
+    }else if(btn.dataset.copyAttr){
+      text=document.getElementById(btn.dataset.copyAttr).dataset.copy||"";
     }
-    if(!text || text==="—" || text==="$") return;
+    if(!text) return;
     try{
       await navigator.clipboard.writeText(text);
       showToast("Copied.");

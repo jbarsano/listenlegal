@@ -213,6 +213,11 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
 .copy-btn:hover{background:#f3f2f1;color:var(--text)}
 .copy-btn svg{width:14px;height:14px}
 .currency .copy-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+.with-btn{position:relative}
+.with-btn input{padding-right:34px!important}
+.with-btn .copy-btn{position:absolute;right:6px;top:50%;transform:translateY(-50%)}
+.with-btn input::-webkit-outer-spin-button,.with-btn input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.with-btn input[type=number]{-moz-appearance:textfield}
 .callout.with-copy{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .big-row{display:flex;align-items:center;gap:6px}
 .right-group{display:flex;align-items:center;gap:8px}
@@ -400,7 +405,12 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
           </div>
           <div>
             <label>Household Size</label>
-            <input id="size" type="number" min="1" placeholder="e.g. 1">
+            <div class="with-btn">
+              <input id="size" type="number" min="1" placeholder="e.g. 1">
+              <button class="copy-btn" data-copy-size="size" type="button" aria-label="Copy household size">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
           </div>
         </div>
         <div class="regions-grid">
@@ -906,6 +916,9 @@ document.querySelectorAll(".copy-btn").forEach(btn=>{
     if(btn.dataset.copyInput){
       const v=num(document.getElementById(btn.dataset.copyInput).value);
       text=v?String(Math.round(v*100)/100):"";
+    }else if(btn.dataset.copySize){
+      const v=parseInt(document.getElementById(btn.dataset.copySize).value,10);
+      text=v>=1?String(v):"";
     }else if(btn.dataset.copyTextId){
       text=document.getElementById(btn.dataset.copyTextId).dataset.copy||"";
     }else if(btn.dataset.copyAttr){

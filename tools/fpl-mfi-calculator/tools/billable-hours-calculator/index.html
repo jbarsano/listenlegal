@@ -1,0 +1,1285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Billable Hours Calculator</title>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-LWXCCNB3Y2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  gtag('js', new Date());
+  gtag('config', 'G-LWXCCNB3Y2');
+
+  function trackEvent(name, params = {}) {
+    if (typeof gtag === "function") {
+      gtag("event", name, params);
+    }
+  }
+</script>
+
+<style>
+:root{
+  --topbar:#8000ff;
+  --topbar-dark:#6600cc;
+  --bg:#f3f2f1;
+  --dot:#d9d7d5;
+  --card:#ffffff;
+  --border:#e1dfdd;
+  --border-strong:#c8c6c4;
+  --text:#201f1e;
+  --muted:#605e5c;
+  --accent:#0000ff;
+  --accent-dark:#0000cc;
+  --accent-tint:#eaeaff;
+  --stop:#d13438; --stop-dark:#a4262c;
+  --radius:6px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+
+.appbar{
+  background:var(--topbar);
+  color:#fff;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 20px;
+}
+.appbar .brand{font-weight:600;font-size:17px;white-space:nowrap}
+.appbar .right{margin-left:auto;display:flex;align-items:center;gap:16px;font-size:13px}
+.appbar .env{display:flex;align-items:center;gap:8px;line-height:1.3}
+.appbar .env .label{opacity:.85;font-size:11px}
+.appbar .env .value{font-weight:600}
+.appbar .globe{width:18px;height:18px;flex-shrink:0}
+@media(max-width:420px){
+  .appbar .env .label{display:none}
+}
+
+.toolbar{
+  background:#fff;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:12px 20px;
+}
+.toolbar .back{
+  display:flex;align-items:center;gap:6px;color:var(--accent);
+  font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;
+  text-decoration:none;
+}
+.toolbar .back:hover{text-decoration:underline}
+.toolbar .back svg{width:14px;height:14px;stroke:var(--accent)}
+.toolbar .title{
+  font-size:14px;font-weight:600;color:var(--text);
+  flex:1;min-width:0;position:relative;cursor:pointer;
+}
+.toolbar .title-text{
+  display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.title-popup{
+  display:none;position:absolute;top:130%;left:0;z-index:60;
+  background:#201f1e;color:#fff;padding:8px 12px;border-radius:4px;
+  font-size:13px;font-weight:600;white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+.title-popup.show{display:block}
+.title-popup::before{
+  content:"";position:absolute;bottom:100%;left:16px;
+  border:6px solid transparent;border-bottom-color:#201f1e;
+}
+@media(max-width:640px){
+  .title-popup{white-space:normal;max-width:calc(100vw - 40px)}
+}
+.toolbar .spacer{margin-left:auto}
+.toolbar .tools{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.tbtn{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  border:none;background:none;color:var(--text);
+  font-size:11px;font-family:inherit;cursor:pointer;
+  padding:6px 12px;border-radius:4px;
+}
+.tbtn:hover{background:#f3f2f1}
+.tbtn svg{width:16px;height:16px;stroke:var(--text)}
+.tbtn.primary,.tbtn.primary svg{color:var(--accent);stroke:var(--accent)}
+
+@media(max-width:640px){
+  .toolbar{gap:10px}
+  .toolbar .spacer{display:none}
+  .tbtn{flex-direction:row;padding:8px;min-width:36px;justify-content:center}
+  .tbtn .tbtn-label{
+    position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+    overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+  }
+}
+
+.canvas{
+  background-color:var(--bg);
+  background-image:radial-gradient(var(--dot) 1px, transparent 1px);
+  background-size:18px 18px;
+  padding:56px 20px 80px;
+  min-height:640px;
+  position:relative;
+}
+.flow{max-width:640px;margin:0 auto;display:flex;flex-direction:column;align-items:center}
+
+.step-card{
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:0 1px 2px rgba(0,0,0,0.11), 0 0.5px 1px rgba(0,0,0,0.08);
+}
+.step-head{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px;
+  position:relative;
+}
+.step-icon{
+  width:44px;height:44px;border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.step-icon.purple{background:#8000ff}
+.step-icon svg{width:22px;height:22px;stroke:#fff}
+.step-title{font-size:15px;font-weight:700;color:var(--text)}
+.step-sub{font-size:12px;color:var(--muted);margin-top:1px}
+
+.step-body{padding:0 18px 20px}
+
+.connector{
+  width:2px;height:28px;background:var(--border-strong);
+}
+
+.inputs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:520px){
+  .inputs-grid{grid-template-columns:1fr}
+}
+
+.timer{
+  margin-left:auto;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.timer-read{text-align:right;display:none}
+.timer.running .timer-read{display:block}
+.timer-clock{
+  display:block;font-size:17px;font-weight:700;color:var(--text);
+  font-variant-numeric:tabular-nums;line-height:1.15;
+}
+.timer-sub{display:block;font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap}
+.timer .dot{
+  width:8px;height:8px;border-radius:50%;background:var(--stop);flex-shrink:0;
+  display:none;
+}
+.timer.running .dot{display:block;animation:pulse 2s ease-in-out infinite}
+@media(max-width:560px){
+  .step-head.has-timer{flex-wrap:wrap}
+  .step-head.has-timer .timer{width:100%;margin-left:0;padding-top:2px}
+  .timer-read{text-align:left}
+  .timer .btn{margin-left:auto}
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media(prefers-reduced-motion:reduce){
+  .timer.running .dot{animation:none}
+}
+
+.tabs{
+  display:flex;gap:4px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+.tab{
+  border:none;background:none;font-family:inherit;cursor:pointer;
+  font-size:12.5px;font-weight:600;color:var(--muted);
+  padding:8px 10px;border-bottom:2px solid transparent;margin-bottom:-1px;
+}
+.tab:hover{color:var(--text)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+
+label{display:block;font-weight:600;font-size:12.5px;margin-bottom:6px;color:var(--text)}
+input{
+  width:100%;padding:8px 10px;border-radius:4px;
+  border:1px solid var(--border-strong);font-size:14px;
+  font-family:inherit;background:#fff;color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+button:focus-visible,a:focus-visible{outline:none;box-shadow:0 0 0 2px var(--accent)}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+input[type=time]{min-height:36px}
+.hint{font-size:11.5px;color:var(--muted);margin-top:10px}
+.hint b{color:var(--text)}
+
+.copy-btn{
+  border:none;background:transparent;color:var(--muted);cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;padding:0;border-radius:3px;flex-shrink:0;
+}
+.copy-btn:hover{background:#f3f2f1;color:var(--text)}
+.copy-btn svg{width:14px;height:14px}
+
+.big-row{display:flex;align-items:center;gap:6px}
+.big{font-size:26px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.line{color:var(--muted);font-size:12.5px;margin-top:2px}
+.callout{margin-top:10px;padding:8px 12px;border-radius:4px;border:1px solid var(--border);background:#f3f2f1;font-size:12.5px;font-weight:600}
+.callout.with-copy{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.callout.carry{margin:0 0 14px;font-weight:400;border-left:3px solid var(--topbar)}
+
+.confirm{
+  width:100%;
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  margin-bottom:20px;padding:10px 12px;border-radius:4px;
+  border:1px solid var(--stop);background:#fdf3f4;
+  font-size:12.5px;font-weight:600;
+}
+.confirm-actions{display:flex;gap:8px;flex-shrink:0}
+
+.optbox{
+  width:100%;margin-bottom:20px;padding:12px 14px;border-radius:4px;
+  border:1px solid var(--border-strong);background:#fff;
+  display:flex;flex-direction:column;gap:10px;
+}
+.optbox-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.optbox-title{font-size:12.5px;font-weight:600}
+.opt{
+  display:inline-flex;align-items:center;gap:6px;margin:0;
+  font-size:12.5px;font-weight:400;cursor:pointer;
+}
+.opt input{width:auto;margin:0;accent-color:var(--accent)}
+.optbox-row input[type=text]{width:180px;font-size:12.5px;padding:6px 8px}
+.optbox-note{font-size:11px;color:var(--muted)}
+.optbox-actions{display:flex;gap:8px}
+.optbox .btn{padding:5px 12px;font-size:12px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-dark);border-color:var(--accent-dark)}
+.confirm .btn{padding:5px 12px;font-size:12px}
+
+
+.btn{
+  border:1px solid var(--border-strong);background:#fff;color:var(--text);
+  padding:7px 14px;border-radius:4px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:inherit;
+}
+.btn:hover{background:#f3f2f1}
+.btn.block{width:100%;margin-top:14px}
+.btn.stop{background:var(--stop);border-color:var(--stop);color:#fff}
+.btn.stop:hover{background:var(--stop-dark);border-color:var(--stop-dark)}
+
+.tally-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tally-list li{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;
+  padding:8px 0;border-bottom:1px solid var(--border);
+}
+.tally-list li:first-child{padding-top:0}
+.tally-list input{font-size:12.5px;padding:6px 8px}
+.entry-act{width:180px;flex-shrink:0}
+.entry-desc{flex:1 1 160px;min-width:0}
+.entry-matter{width:110px;flex-shrink:0}
+.tally-list .t-val{
+  position:relative;flex-shrink:0;min-width:26px;
+  font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;
+  cursor:default;padding:2px;border-radius:3px;
+}
+.tally-list .t-val:focus-visible{outline:none;box-shadow:0 0 0 2px var(--accent)}
+.val-tip{
+  display:none;position:absolute;top:150%;left:0;z-index:50;
+  background:#201f1e;color:#fff;padding:6px 9px;border-radius:4px;
+  font-size:11.5px;font-weight:400;white-space:nowrap;
+  box-shadow:0 4px 12px rgba(0,0,0,0.2);
+}
+.val-tip::before{
+  content:"";position:absolute;bottom:100%;left:6px;
+  border:5px solid transparent;border-bottom-color:#201f1e;
+}
+.t-val:hover .val-tip,.t-val.open .val-tip,.t-val:focus-visible .val-tip{display:block}
+.tally-list .t-del{
+  border:none;background:transparent;color:var(--muted);cursor:pointer;
+  width:22px;height:22px;border-radius:3px;font-size:15px;line-height:1;padding:0;
+  font-family:inherit;flex-shrink:0;
+}
+.tally-list .t-del:hover{background:#f3f2f1;color:var(--text)}
+.empty{font-size:12.5px;color:var(--muted);font-style:italic}
+
+.reference{margin-top:34px}
+.chart-grid{
+  display:grid;grid-auto-flow:column;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  grid-template-rows:repeat(var(--chart-rows,5),auto);
+  gap:0 36px;
+}
+@media(max-width:520px){
+  .chart-grid{grid-auto-flow:row;grid-template-columns:1fr;grid-template-rows:none}
+}
+.chart-item{
+  display:grid;grid-template-columns:92px auto;align-items:baseline;gap:12px;
+  padding:6px 0;border-bottom:1px solid var(--border);
+  font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap;
+}
+.chart-item .k{color:var(--muted)}
+.chart-item .v{font-weight:700}
+
+.toast{
+  display:none;width:100%;margin-bottom:20px;padding:9px 12px;border-radius:4px;
+  border:1px solid var(--accent);background:var(--accent-tint);
+  font-size:13px;color:var(--accent-dark);
+}
+
+.result-row{
+  display:flex;align-items:center;gap:16px;
+  margin-top:16px;padding-top:14px;border-top:1px solid var(--border);
+}
+.result-val{flex:1;min-width:0}
+.result-row .btn{flex-shrink:0}
+.result-row.empty .big{color:var(--border-strong)}
+.result-row.empty .line{font-style:italic}
+.result-row.empty .copy-btn{display:none}
+@media(max-width:520px){
+  .result-row{flex-direction:column;align-items:stretch;gap:12px}
+  .result-row .btn{width:100%}
+}
+
+.actions-strip{
+  margin-top:26px;width:100%;
+  background:#fff;border:1px solid var(--border);border-radius:var(--radius);
+  box-shadow:0 1px 2px rgba(0,0,0,0.11);
+  padding:12px 16px;
+}
+.actions-strip .foot-note{font-size:10px;color:var(--muted);text-align:left;overflow-wrap:break-word}
+.actions-strip .foot-note div{margin-top:2px}
+.actions-strip .foot-note div:first-child{margin-top:0}
+.footer-links{
+  display:flex;gap:18px;margin-bottom:10px;padding-bottom:10px;
+  border-bottom:1px solid var(--border);
+}
+.share-link{
+  border:0;background:transparent;color:var(--muted);font-size:12.5px;font-weight:600;
+  cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:0;
+  font-family:inherit;text-decoration:none;
+}
+.share-link:hover{color:var(--text);text-decoration:underline}
+.share-link .share-ic{width:15px;height:15px;flex-shrink:0}
+
+@media print{
+  .appbar,.toolbar,.connector,.confirm,.actions-strip,
+  #timeCard,.reference,.t-del,.btn{display:none!important}
+  .canvas{background-image:none;padding:0;min-height:0}
+  .flow{max-width:none}
+  .step-card{box-shadow:none;border:none}
+  .step-body{padding:0}
+  .tally-list input{border:none;padding:2px 0;background:none}
+  .callout{border:none;background:none;padding:8px 0}
+}
+</style>
+</head>
+
+<body>
+
+<div class="appbar">
+  <div class="brand">ListenLegal</div>
+  <div class="right">
+    <div class="env">
+      <svg class="globe" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 4 6 4 9s-1.5 6.4-4 9c-2.5-2.6-4-6-4-9s1.5-6.4 4-9Z"/></svg>
+      <span><span class="label">Public tools</span><br><span class="value">listenlegal.com</span></span>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <a class="back" href="/tools/">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Back
+  </a>
+  <div class="title" id="titleTap">
+    <span class="title-text">Billable Hours Calculator</span>
+    <span class="title-popup" id="titlePopup">Billable Hours Calculator</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="tools">
+    <button class="tbtn primary" id="shareEntriesBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3M8 7l4-4 4 4M6 10v10h12V10"/></svg>
+      <span class="tbtn-label">Share</span>
+    </button>
+    <button class="tbtn" id="exportBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M8 12l4 4 4-4M6 20h12"/></svg>
+      <span class="tbtn-label">Export CSV</span>
+    </button>
+    <button class="tbtn" id="printBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>
+      <span class="tbtn-label">Print</span>
+    </button>
+    <button class="tbtn" id="clearBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+      <span class="tbtn-label">Clear</span>
+    </button>
+  </div>
+</div>
+
+<div class="canvas">
+  <div class="flow">
+
+    <div id="toast" class="toast"></div>
+
+    <div class="optbox" id="exportOptions" hidden>
+      <div class="optbox-row" id="formatChoices">
+        <span class="optbox-title">Export as</span>
+      </div>
+      <div class="optbox-row" id="clioFields" hidden>
+        <input type="text" id="exportRate" placeholder="Rate" aria-label="Rate" inputmode="decimal">
+      </div>
+      <div class="optbox-row" id="formatNote" hidden>
+        <span class="optbox-note" id="formatNoteText"></span>
+      </div>
+      <div class="optbox-actions">
+        <button class="btn primary" id="exportGo" type="button">Download</button>
+        <button class="btn" id="exportCancel" type="button">Cancel</button>
+      </div>
+    </div>
+
+    <div class="confirm" id="clearConfirm" hidden>
+      <span id="clearConfirmText"></span>
+      <span class="confirm-actions">
+        <button class="btn stop" id="clearYes" type="button">Clear</button>
+        <button class="btn" id="clearNo" type="button">Cancel</button>
+      </span>
+    </div>
+
+    <div class="step-card" id="timeCard">
+      <div class="step-head has-timer">
+        <div class="step-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+        </div>
+        <div>
+          <div class="step-title">Time Spent</div>
+          <div class="step-sub">Enter it however you have it</div>
+        </div>
+        <div class="timer" id="timerRow">
+          <span class="dot" aria-hidden="true"></span>
+          <div class="timer-read">
+            <span class="timer-clock" id="timerClock"></span>
+            <span class="timer-sub" id="timerSub"></span>
+          </div>
+          <button class="btn" id="timerBtn" type="button">Start timer</button>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="callout carry" id="carryNote" hidden></div>
+
+        <div class="tabs" role="tablist">
+          <button class="tab" id="tabDuration" type="button" role="tab" aria-selected="true" aria-controls="paneDuration">Hours and minutes</button>
+          <button class="tab" id="tabTimes" type="button" role="tab" aria-selected="false" aria-controls="paneTimes">Start and end</button>
+        </div>
+
+        <div class="inputs-grid" id="paneDuration" role="tabpanel" aria-labelledby="tabDuration">
+          <div>
+            <label for="hrs">Hours</label>
+            <input id="hrs" type="number" min="0" step="1" placeholder="e.g. 1" inputmode="numeric">
+          </div>
+          <div>
+            <label for="mins">Minutes</label>
+            <input id="mins" type="number" min="0" step="1" placeholder="e.g. 19" inputmode="numeric">
+          </div>
+        </div>
+
+        <div class="inputs-grid" id="paneTimes" role="tabpanel" aria-labelledby="tabTimes" hidden>
+          <div>
+            <label for="startTime">Start Time</label>
+            <input id="startTime" type="time">
+          </div>
+          <div>
+            <label for="endTime">End Time</label>
+            <input id="endTime" type="time">
+          </div>
+        </div>
+        <div class="hint" id="elapsedHint" hidden></div>
+
+        <div class="result-row empty" id="resultRow">
+          <div class="result-val">
+            <div class="big-row">
+              <div class="big" id="billValue">&mdash;</div>
+              <button class="copy-btn" data-copy-text-id="billValue" type="button" aria-label="Copy billable time">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </button>
+            </div>
+            <div class="line" id="billDetail">Enter the time spent.</div>
+          </div>
+          <button class="btn" id="addBtn" type="button">Add to running total</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="connector"></div>
+
+    <div class="step-card" id="tallyCard">
+      <div class="step-head">
+        <div class="step-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        </div>
+        <div>
+          <div class="step-title">Running Total</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <datalist id="activityList"></datalist>
+        <ul class="tally-list" id="tallyList"></ul>
+        <div class="empty" id="tallyEmpty">No entries yet. Add time from the box above.</div>
+        <div id="tallyTotal" class="callout with-copy" style="display:none">
+          <span id="tallyTotalText"></span>
+          <button class="copy-btn" data-copy-attr="tallyTotal" type="button" aria-label="Copy running total">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card reference">
+      <div class="step-head">
+        <div class="step-icon purple">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>
+        </div>
+        <div>
+          <div class="step-title">Reference Chart</div>
+          <div class="step-sub" id="chartSub">Minutes to tenths of an hour</div>
+        </div>
+      </div>
+      <div class="step-body">
+        <div class="chart-grid" id="chartBody"></div>
+      </div>
+    </div>
+
+    <div class="actions-strip">
+      <div class="footer-links">
+        <button class="share-link" id="shareBtn" type="button" aria-label="Share this tool">
+          <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Share this tool
+        </button>
+        <a class="share-link" href="mailto:josette@barsanolaw.com?subject=Billable%20Hours%20Calculator%20Feedback">
+          <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m4 6 8 7 8-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Send feedback
+        </a>
+      </div>
+      <div class="foot-note">
+        <div id="convention"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const BILLING={
+  incrementMinutes:6,
+  rounding:"up",
+  decimals:1,
+  unitName:"tenth of an hour",
+  unitNamePlural:"tenths of an hour",
+  timerRounding:"up",
+  activities:[
+    {code:"A109", label:"Appear for/attend"},
+    {code:"A105", label:"Communicate (in firm)"},
+    {code:"A108", label:"Communicate (other external)"},
+    {code:"A107", label:"Communicate (other outside counsel)"},
+    {code:"A106", label:"Communicate (with client)"},
+    {code:"A103", label:"Draft/revise"},
+    {code:"A110", label:"Manage data/files"},
+    {code:"A111", label:"Other"},
+    {code:"A101", label:"Plan and Prepare for"},
+    {code:"A102", label:"Research"},
+    {code:"A104", label:"Review/analyze"},
+    {code:"A112", label:"Travel Time"}
+  ]
+};
+
+const TIMEKEEPER_NOTE="User, Rate, Rate Type and Nonbillable are left blank to fill in the spreadsheet.";
+const EXPORT_FORMATS=[
+  {id:"entered", label:"As entered", file:"billable-hours", rows:()=>rowsAsEntered()},
+  {id:"clio",    label:"Clio",       file:"billable-hours-clio", rows:()=>rowsClio(), needsRate:true,
+   note:"Matter must match the Clio matter display number exactly. Clio requires a price, so a blank rate may fail the import. Activity is sent as both the description and its UTBMS code."},
+  {id:"lawpay",  label:"LawPay",     file:"billable-hours-lawpay", rows:()=>rowsTimekeeper(), note:TIMEKEEPER_NOTE},
+  {id:"mycase",  label:"MyCase",     file:"billable-hours-mycase", rows:()=>rowsTimekeeper(), note:TIMEKEEPER_NOTE}
+];
+
+const INC=BILLING.incrementMinutes;
+const UNIT_HOURS=INC/60;
+
+function unitsFor(minutes){
+  if(!(minutes>0)) return 0;
+  return BILLING.rounding==="nearest"
+    ? Math.max(1,Math.round(minutes/INC))
+    : Math.ceil(minutes/INC);
+}
+function billedFor(minutes){ return unitsFor(minutes)*UNIT_HOURS; }
+function fmtBilled(hours){ return hours.toFixed(BILLING.decimals); }
+function fmtHM(m){
+  const h=Math.floor(m/60);
+  const r=Math.round((m-h*60)*100)/100;
+  if(h && r) return h+" hr "+r+" min";
+  if(h) return h+" hr";
+  return r+" min";
+}
+function unitRangeText(n){
+  if(BILLING.rounding==="nearest") return fmtHM((n-0.5)*INC)+" – "+fmtHM((n+0.5)*INC);
+  return ((n-1)*INC+1)+" – "+(n*INC)+" min";
+}
+
+const startTime=document.getElementById("startTime");
+const endTime=document.getElementById("endTime");
+const hrs=document.getElementById("hrs");
+const mins=document.getElementById("mins");
+const elapsedHint=document.getElementById("elapsedHint");
+const toastEl=document.getElementById("toast");
+
+function showToast(msg){
+  toastEl.textContent=msg;
+  toastEl.style.display="block";
+  window.clearTimeout(showToast._t);
+  showToast._t=window.setTimeout(()=>{toastEl.style.display="none";},1800);
+}
+function num(v){
+  const n=Number(String(v).replace(/[^0-9.]/g,""));
+  return Number.isFinite(n)?n:0;
+}
+function parseClock(v){
+  const m=/^(\d{1,2}):(\d{2})/.exec(v||"");
+  if(!m) return null;
+  const h=Number(m[1]), mi=Number(m[2]);
+  if(h>23 || mi>59) return null;
+  return h*60+mi;
+}
+function toClock(minutesOfDay){
+  const t=((Math.round(minutesOfDay)%1440)+1440)%1440;
+  return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
+}
+function fmtClock(minutesOfDay){
+  const t=((Math.round(minutesOfDay)%1440)+1440)%1440;
+  const h24=Math.floor(t/60), mi=t%60;
+  const h12=h24%12===0?12:h24%12;
+  return h12+":"+String(mi).padStart(2,"0")+(h24<12?" AM":" PM");
+}
+function clockLabel(v){
+  const t=parseClock(v);
+  return t===null?"":fmtClock(t);
+}
+
+let useTimer=null;
+let lastUseSignature="";
+let lastSource="direct";
+let restoring=false;
+
+const STORE_KEY="listenlegal.billable.v1";
+function saveState(){
+  if(restoring) return;
+  try{
+    localStorage.setItem(STORE_KEY,JSON.stringify({
+      savedAt:Date.now(),
+      start:startTime.value,
+      end:endTime.value,
+      h:hrs.value,
+      m:mins.value,
+      tab:lastSource==="times"?"times":"duration",
+      timerStart:timerStart,
+      exportFormat:chosenFormat().id,
+      exportRate:document.getElementById("exportRate").value,
+      tally:tally
+    }));
+  }catch(e){}
+}
+function readState(){
+  try{
+    const raw=localStorage.getItem(STORE_KEY);
+    if(!raw) return null;
+    const s=JSON.parse(raw);
+    return (s && typeof s==="object")?s:null;
+  }catch(e){ return null; }
+}
+function forgetState(){
+  try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+}
+
+function currentMinutes(){ return num(hrs.value)*60+num(mins.value); }
+
+function setDuration(t){
+  const h=Math.floor(t/60);
+  const r=Math.round((t-h*60)*100)/100;
+  hrs.value=h?String(h):"";
+  mins.value=r?String(r):(h?"":"");
+}
+function setElapsedHint(){
+  const s=parseClock(startTime.value), e=parseClock(endTime.value);
+  if(lastSource!=="times" || s===null || e===null){
+    elapsedHint.hidden=true;
+    return;
+  }
+  let d=e-s;
+  const wrapped=d<0;
+  if(wrapped) d+=1440;
+  elapsedHint.textContent="";
+  const strong=document.createElement("b");
+  strong.textContent=fmtHM(d);
+  elapsedHint.appendChild(document.createTextNode(clockLabel(startTime.value)+" to "+clockLabel(endTime.value)+" is "));
+  elapsedHint.appendChild(strong);
+  elapsedHint.appendChild(document.createTextNode("."+(wrapped?" Counted across midnight.":"")));
+  elapsedHint.hidden=false;
+}
+function fromTimes(){
+  const s=parseClock(startTime.value), e=parseClock(endTime.value);
+  if(s!==null && e!==null){
+    let d=e-s;
+    if(d<0) d+=1440;
+    setDuration(d);
+  }
+  setElapsedHint();
+}
+function pushEndTime(){
+  const s=parseClock(startTime.value);
+  if(s===null) return;
+  const t=currentMinutes();
+  endTime.value = t>0 ? toClock(s+t) : "";
+  setElapsedHint();
+}
+
+startTime.oninput=endTime.oninput=()=>{ lastSource="times"; fromTimes(); update(); };
+hrs.oninput=mins.oninput=()=>{ pushEndTime(); update(); };
+
+const tabDuration=document.getElementById("tabDuration");
+const tabTimes=document.getElementById("tabTimes");
+function selectTab(which){
+  const times=which==="times";
+  lastSource=times?"times":"direct";
+  tabTimes.setAttribute("aria-selected",times?"true":"false");
+  tabDuration.setAttribute("aria-selected",times?"false":"true");
+  document.getElementById("paneTimes").hidden=!times;
+  document.getElementById("paneDuration").hidden=times;
+  if(times) pushEndTime();
+  setElapsedHint();
+  saveState();
+}
+tabTimes.onclick=()=>selectTab("times");
+tabDuration.onclick=()=>selectTab("duration");
+
+const timerRow=document.getElementById("timerRow");
+const timerBtn=document.getElementById("timerBtn");
+const timerClock=document.getElementById("timerClock");
+const timerSub=document.getElementById("timerSub");
+let timerStart=null;
+let timerTick=null;
+
+function elapsedSeconds(){ return timerStart===null?0:Math.max(0,(Date.now()-timerStart)/1000); }
+function elapsedMinutes(){
+  const s=elapsedSeconds();
+  return BILLING.timerRounding==="nearest"
+    ? Math.max(0,Math.round(s/60))
+    : Math.max(1,Math.ceil(s/60));
+}
+function minutesOfDay(ms){
+  const d=new Date(ms);
+  return d.getHours()*60+d.getMinutes();
+}
+function isoDate(d){
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function fmtStopwatch(sec){
+  const t=Math.floor(sec);
+  const h=Math.floor(t/3600), m=Math.floor((t%3600)/60), s=t%60;
+  return h+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+function sameDay(ms){ return new Date(ms).toDateString()===new Date().toDateString(); }
+function dayLabel(ms){
+  return new Date(ms).toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+}
+function paintTimer(){
+  if(timerStart===null){
+    timerRow.classList.remove("running");
+    timerBtn.textContent="Start timer";
+    timerBtn.classList.remove("stop");
+    timerClock.textContent="";
+    timerSub.textContent="";
+    return;
+  }
+  timerRow.classList.add("running");
+  timerBtn.textContent="Stop timer";
+  timerBtn.classList.add("stop");
+  timerClock.textContent=fmtStopwatch(elapsedSeconds());
+  const m=elapsedMinutes();
+  const day=sameDay(timerStart)?"":dayLabel(timerStart)+" · ";
+  timerSub.textContent=day+"bills "+fmtBilled(billedFor(m))+" so far";
+}
+function runTicker(){
+  window.clearInterval(timerTick);
+  paintTimer();
+  timerTick=window.setInterval(paintTimer,1000);
+}
+function startTimer(at){
+  timerStart=at||Date.now();
+  selectTab("times");
+  startTime.value=toClock(minutesOfDay(timerStart));
+  endTime.value="";
+  hrs.value=""; mins.value="";
+  lastSource="times";
+  setElapsedHint();
+  update();
+  runTicker();
+}
+function stopTimer(){
+  if(timerStart===null) return;
+  const m=elapsedMinutes();
+  window.clearInterval(timerTick);
+  timerTick=null;
+  timerStart=null;
+  const s=parseClock(startTime.value);
+  if(s!==null) endTime.value=toClock(s+m);
+  lastSource="times";
+  fromTimes();
+  update();
+  paintTimer();
+  trackEvent("timer_used",{tool:"billable_hours_calculator",minutes:m});
+  showToast("Timer stopped at "+fmtHM(m)+".");
+}
+function resetTimer(){
+  window.clearInterval(timerTick);
+  timerTick=null;
+  timerStart=null;
+  paintTimer();
+}
+timerBtn.onclick=()=>{ timerStart===null?startTimer():stopTimer(); };
+
+function update(){
+  saveState();
+  const m=currentMinutes();
+  const row=document.getElementById("resultRow");
+
+  if(!(m>0)){
+    row.classList.add("empty");
+    document.getElementById("billValue").textContent="—";
+    delete document.getElementById("billValue").dataset.copy;
+    document.getElementById("billDetail").textContent="Enter the time spent.";
+    return;
+  }
+  row.classList.remove("empty");
+
+  const n=unitsFor(m);
+  const billed=billedFor(m);
+  const exact=m/60;
+  const value=fmtBilled(billed);
+
+  document.getElementById("billValue").textContent=value;
+  document.getElementById("billValue").dataset.copy=value;
+  document.getElementById("billDetail").textContent=
+    fmtHM(m)+" is "+exact.toFixed(4).replace(/0+$/,"").replace(/\.$/,"")+" hours exactly.";
+
+  const signature=String(Math.round(m*100)/100);
+  if(signature!==lastUseSignature){
+    window.clearTimeout(useTimer);
+    useTimer=window.setTimeout(()=>{
+      trackEvent("tool_used",{tool:"billable_hours_calculator",increment_minutes:INC,entry_method:lastSource});
+      lastUseSignature=signature;
+    },800);
+  }
+}
+
+let tally=[];
+function renderTally(){
+  const list=document.getElementById("tallyList");
+  const empty=document.getElementById("tallyEmpty");
+  const totalBox=document.getElementById("tallyTotal");
+  list.textContent="";
+  saveState();
+
+  if(!tally.length){
+    empty.style.display="block";
+    totalBox.style.display="none";
+    return;
+  }
+  empty.style.display="none";
+
+  tally.forEach((entry,i)=>{
+    const li=document.createElement("li");
+
+    const act=document.createElement("input");
+    act.className="entry-act";
+    act.setAttribute("list","activityList");
+    act.placeholder="Activity";
+    act.setAttribute("aria-label","Activity");
+    act.value=entry.activity||"";
+    act.title=act.value;
+    act.oninput=()=>{ tally[i].activity=act.value; act.title=act.value; saveState(); };
+
+    const desc=document.createElement("input");
+    desc.className="entry-desc";
+    desc.placeholder="Description";
+    desc.setAttribute("aria-label","Description");
+    desc.value=entry.description||"";
+    desc.oninput=()=>{ tally[i].description=desc.value; saveState(); };
+
+    const matter=document.createElement("input");
+    matter.className="entry-matter";
+    matter.placeholder="Matter";
+    matter.setAttribute("aria-label","Matter");
+    matter.value=entry.matter||"";
+    matter.oninput=()=>{ tally[i].matter=matter.value; saveState(); };
+
+    const detail=entry.label?fmtHM(entry.minutes)+"  ·  "+entry.label:fmtHM(entry.minutes);
+    const v=document.createElement("span");
+    v.className="t-val";
+    v.tabIndex=0;
+    v.textContent=fmtBilled(billedFor(entry.minutes));
+    v.setAttribute("aria-label",fmtBilled(billedFor(entry.minutes))+" hours, "+detail);
+    const tip=document.createElement("span");
+    tip.className="val-tip";
+    tip.textContent=detail;
+    v.appendChild(tip);
+    v.onclick=(e)=>{
+      e.stopPropagation();
+      const wasOpen=v.classList.contains("open");
+      document.querySelectorAll(".t-val.open").forEach(o=>o.classList.remove("open"));
+      if(!wasOpen) v.classList.add("open");
+    };
+
+    const del=document.createElement("button");
+    del.className="t-del"; del.type="button"; del.textContent="×";
+    del.setAttribute("aria-label","Remove the "+fmtHM(entry.minutes)+" entry");
+    del.onclick=()=>{ tally.splice(i,1); renderTally(); };
+
+    li.appendChild(del); li.appendChild(v); li.appendChild(act); li.appendChild(desc); li.appendChild(matter);
+    list.appendChild(li);
+  });
+
+  const sumBilled=tally.reduce((a,e)=>a+billedFor(e.minutes),0);
+  const sumMinutes=tally.reduce((a,e)=>a+e.minutes,0);
+  const totalValue=fmtBilled(sumBilled);
+
+  totalBox.style.display="flex";
+  document.getElementById("tallyTotalText").textContent=
+    "Total: "+totalValue+" hours from "+tally.length+" "+(tally.length===1?"entry":"entries")+" ("+fmtHM(Math.round(sumMinutes*100)/100)+")";
+  totalBox.dataset.copy=totalValue;
+}
+function csvCell(v){
+  let t=String(v==null?"":v);
+  if(/^[=+@]/.test(t)) t="'"+t;
+  return /[",\r\n]/.test(t) ? '"'+t.replace(/"/g,'""')+'"' : t;
+}
+function entriesText(){
+  const rows=[["Matter","Activity","Description","Time Spent","Billed"]];
+  tally.forEach(e=>{
+    rows.push([
+      e.matter||"",
+      e.activity||"",
+      e.description||"",
+      e.label?fmtHM(e.minutes)+" ("+e.label+")":fmtHM(e.minutes),
+      fmtBilled(billedFor(e.minutes))
+    ]);
+  });
+  const total=tally.reduce((a,e)=>a+billedFor(e.minutes),0);
+  rows.push(["Total","","","",fmtBilled(total)]);
+  return rows.map(r=>r.map(c=>String(c).replace(/[\t\r\n]+/g," ")).join("\t")).join("\n");
+}
+
+function activityCode(label){
+  const t=String(label||"").trim().toLowerCase();
+  const hit=BILLING.activities.find(a=>a.label.toLowerCase()===t);
+  return hit?hit.code:"";
+}
+function mdy(iso){
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||"");
+  return m?(m[2]+"/"+m[3]+"/"+m[1]):"";
+}
+function csvText(rows){
+  return "\uFEFF"+rows.map(r=>r.map(csvCell).join(",")).join("\r\n");
+}
+function rowsAsEntered(){
+  const rows=[["Date","Matter","Activity","Description","Time Spent","Billed"]];
+  tally.forEach(e=>{
+    rows.push([
+      e.date||"",
+      e.matter||"",
+      e.activity||"",
+      e.description||"",
+      e.label?fmtHM(e.minutes)+" ("+e.label+")":fmtHM(e.minutes),
+      fmtBilled(billedFor(e.minutes))
+    ]);
+  });
+  return rows;
+}
+function rowsTimekeeper(){
+  const rows=[["Case Name","User","Activity","Note","Date","Rate","Rate Type","Hours","Nonbillable"]];
+  tally.forEach(e=>{
+    rows.push([
+      e.matter||"",
+      "",
+      e.activity||"",
+      e.description||"",
+      mdy(e.date),
+      "",
+      "",
+      fmtBilled(billedFor(e.minutes)),
+      ""
+    ]);
+  });
+  return rows;
+}
+function rowsClio(){
+  const rate=document.getElementById("exportRate").value.trim();
+  const rows=[["matter","date","activity_description","note","price","quantity","type","activity_user","non_billable","utbms_activity_code","utbms_task_code","utbms_expense_code"]];
+  tally.forEach(e=>{
+    rows.push([
+      e.matter||"",
+      mdy(e.date),
+      e.activity||"",
+      e.description||"",
+      rate,
+      fmtBilled(billedFor(e.minutes)),
+      "TimeEntry",
+      "",
+      "",
+      activityCode(e.activity),
+      "",
+      ""
+    ]);
+  });
+  return rows;
+}
+function downloadCsv(text,name){
+  const blob=new Blob([text],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=name;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  window.setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function chosenFormat(){
+  const picked=document.querySelector('input[name="exportFormat"]:checked');
+  const id=picked?picked.value:"entered";
+  return EXPORT_FORMATS.find(f=>f.id===id)||EXPORT_FORMATS[0];
+}
+function exportCsv(){
+  const format=chosenFormat();
+  downloadCsv(csvText(format.rows()),format.file+"-"+isoDate(new Date())+".csv");
+  trackEvent("export_csv",{tool:"billable_hours_calculator",entries:tally.length,format:format.id});
+  showToast(tally.length+" "+(tally.length===1?"entry":"entries")+" exported.");
+}
+function buildFormats(){
+  const box=document.getElementById("formatChoices");
+  EXPORT_FORMATS.forEach((f,i)=>{
+    const label=document.createElement("label");
+    label.className="opt";
+    const radio=document.createElement("input");
+    radio.type="radio";
+    radio.name="exportFormat";
+    radio.value=f.id;
+    if(i===0) radio.checked=true;
+    radio.onchange=syncFormatFields;
+    label.appendChild(radio);
+    label.appendChild(document.createTextNode(" "+f.label));
+    box.appendChild(label);
+  });
+}
+
+const exportOptions=document.getElementById("exportOptions");
+function syncFormatFields(){
+  const f=chosenFormat();
+  document.getElementById("clioFields").hidden=!f.needsRate;
+  document.getElementById("formatNote").hidden=!f.note;
+  if(f.note) document.getElementById("formatNoteText").textContent=f.note;
+  saveState();
+}
+document.getElementById("exportRate").oninput=saveState;
+document.getElementById("exportCancel").onclick=()=>{ exportOptions.hidden=true; };
+document.getElementById("exportGo").onclick=()=>{ exportOptions.hidden=true; exportCsv(); };
+document.getElementById("exportBtn").onclick=()=>{
+  if(!tally.length){ showToast("No entries to export yet."); return; }
+  exportOptions.hidden=!exportOptions.hidden;
+};
+
+document.getElementById("addBtn").onclick=()=>{
+  if(timerStart!==null) stopTimer();
+  const m=currentMinutes();
+  if(!(m>0)){ showToast("Enter the time spent first."); return; }
+  const s=parseClock(startTime.value), e=parseClock(endTime.value);
+  const label=(lastSource==="times" && s!==null && e!==null)?clockLabel(startTime.value)+" to "+clockLabel(endTime.value):"";
+  tally.push({minutes:m,label:label,activity:"",description:"",matter:"",date:isoDate(new Date())});
+  startTime.value=""; endTime.value="";
+  hrs.value=""; mins.value="";
+  setElapsedHint();
+  renderTally();
+  update();
+  showToast("Added "+fmtHM(m)+".");
+};
+
+function buildActivities(){
+  const dl=document.getElementById("activityList");
+  BILLING.activities.forEach(a=>{
+    const o=document.createElement("option");
+    o.value=a.label;
+    dl.appendChild(o);
+  });
+}
+
+function buildChart(){
+  const body=document.getElementById("chartBody");
+  const perHour=Math.round(60/INC);
+  body.style.setProperty("--chart-rows",String(Math.ceil(perHour/2)));
+  for(let n=1;n<=perHour;n++){
+    const row=document.createElement("div");
+    row.className="chart-item";
+    const k=document.createElement("span"); k.className="k"; k.textContent=unitRangeText(n);
+    const v=document.createElement("span"); v.className="v"; v.textContent=fmtBilled(n*UNIT_HOURS);
+    row.appendChild(k); row.appendChild(v);
+    body.appendChild(row);
+  }
+}
+
+function clearAll(){
+  resetTimer();
+  forgetState();
+  document.getElementById("exportOptions").hidden=true;
+  document.getElementById("carryNote").hidden=true;
+  document.getElementById("clearConfirm").hidden=true;
+  startTime.value=""; endTime.value="";
+  hrs.value=""; mins.value="";
+  tally=[];
+  setElapsedHint();
+  renderTally();
+  update();
+}
+const clearConfirm=document.getElementById("clearConfirm");
+function hasAnything(){ return tally.length>0 || currentMinutes()>0 || timerStart!==null; }
+document.getElementById("clearBtn").onclick=()=>{
+  if(!hasAnything()){ clearAll(); return; }
+  const bits=[];
+  if(tally.length) bits.push(tally.length+" "+(tally.length===1?"entry":"entries"));
+  if(currentMinutes()>0) bits.push("the time entered");
+  if(timerStart!==null) bits.push("the running timer");
+  let text=bits[0];
+  if(bits.length===2) text=bits[0]+" and "+bits[1];
+  if(bits.length===3) text=bits[0]+", "+bits[1]+" and "+bits[2];
+  document.getElementById("clearConfirmText").textContent="Clear "+text+"? This cannot be undone.";
+  clearConfirm.hidden=false;
+};
+document.getElementById("clearNo").onclick=()=>{ clearConfirm.hidden=true; };
+document.getElementById("clearYes").onclick=()=>{ clearConfirm.hidden=true; clearAll(); showToast("Cleared."); };
+
+document.getElementById("printBtn").onclick=()=>{
+  trackEvent("tool_printed",{tool:"billable_hours_calculator"});
+  window.print();
+};
+
+document.getElementById("shareEntriesBtn").onclick=async ()=>{
+  if(!tally.length){ showToast("No entries to share yet."); return; }
+  const text=entriesText();
+  trackEvent("entries_shared",{tool:"billable_hours_calculator",entries:tally.length});
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast(tally.length+" "+(tally.length===1?"entry":"entries")+" copied.");
+  }catch(e){
+    const ta=document.createElement("textarea");
+    ta.value=text;
+    document.body.appendChild(ta);
+    ta.select();
+    try{ document.execCommand("copy"); showToast("Entries copied."); }
+    catch(e2){ showToast("Could not copy automatically."); }
+    document.body.removeChild(ta);
+  }
+};
+
+document.getElementById("shareBtn").onclick=async ()=>{
+  const url=window.location.origin+window.location.pathname;
+  if(navigator.share){
+    try{
+      await navigator.share({title:"Billable Hours Calculator",url});
+      trackEvent("tool_shared",{tool:"billable_hours_calculator",method:"native_share"});
+      return;
+    }catch(e){}
+  }
+  try{
+    await navigator.clipboard.writeText(url);
+    trackEvent("tool_shared",{tool:"billable_hours_calculator",method:"copy_fallback"});
+    showToast("Link copied.");
+  }catch(e){
+    showToast("Could not copy automatically.");
+  }
+};
+
+const titleTap=document.getElementById("titleTap");
+const titlePopup=document.getElementById("titlePopup");
+let titlePopupTimer=null;
+titleTap.addEventListener("click",(e)=>{
+  e.stopPropagation();
+  titlePopup.classList.toggle("show");
+  window.clearTimeout(titlePopupTimer);
+  if(titlePopup.classList.contains("show")){
+    titlePopupTimer=window.setTimeout(()=>titlePopup.classList.remove("show"),3000);
+  }
+});
+document.addEventListener("click",()=>{
+  titlePopup.classList.remove("show");
+  document.querySelectorAll(".t-val.open").forEach(o=>o.classList.remove("open"));
+});
+
+document.querySelectorAll(".copy-btn").forEach(btn=>{
+  btn.addEventListener("click",async (e)=>{
+    e.stopPropagation();
+    let text="";
+    if(btn.dataset.copyTextId) text=document.getElementById(btn.dataset.copyTextId).dataset.copy||"";
+    else if(btn.dataset.copyAttr) text=document.getElementById(btn.dataset.copyAttr).dataset.copy||"";
+    if(!text) return;
+    try{
+      await navigator.clipboard.writeText(text);
+      showToast("Copied.");
+    }catch(err){
+      showToast("Could not copy automatically.");
+    }
+  });
+});
+
+document.getElementById("chartSub").textContent="Minutes to "+BILLING.unitNamePlural;
+document.getElementById("convention").textContent=
+  "Billing increment: "+INC+" minutes, one "+BILLING.unitName+" ("+fmtBilled(UNIT_HOURS)+" hours). "+
+  (BILLING.rounding==="nearest"?"Time is rounded to the nearest increment.":"Part of an increment is billed as a whole increment.");
+
+function restoreState(){
+  const saved=readState();
+  if(!saved) return;
+  restoring=true;
+  startTime.value=typeof saved.start==="string"?saved.start:"";
+  endTime.value=typeof saved.end==="string"?saved.end:"";
+  hrs.value=typeof saved.h==="string"?saved.h:"";
+  mins.value=typeof saved.m==="string"?saved.m:"";
+  tally=Array.isArray(saved.tally)
+    ? saved.tally.filter(e=>e && typeof e.minutes==="number" && e.minutes>0)
+                 .map(e=>({
+                   minutes:e.minutes,
+                   label:typeof e.label==="string"?e.label:"",
+                   activity:typeof e.activity==="string"?e.activity:"",
+                   description:typeof e.description==="string"?e.description:"",
+                   matter:typeof e.matter==="string"?e.matter:"",
+                   date:typeof e.date==="string"?e.date:""
+                 }))
+    : [];
+  selectTab(saved.tab==="times"?"times":"duration");
+  if(saved.exportFormat){
+    const r=document.querySelector('input[name="exportFormat"][value="'+saved.exportFormat+'"]');
+    if(r) r.checked=true;
+  }
+  document.getElementById("exportRate").value=typeof saved.exportRate==="string"?saved.exportRate:"";
+  syncFormatFields();
+  if(typeof saved.timerStart==="number" && saved.timerStart>0 && saved.timerStart<=Date.now()){
+    timerStart=saved.timerStart;
+  }
+  restoring=false;
+
+  if(saved.savedAt && !sameDay(saved.savedAt)){
+    const note=document.getElementById("carryNote");
+    note.textContent="Carried over from "+dayLabel(saved.savedAt)+". Clear to start fresh.";
+    note.hidden=false;
+  }
+}
+
+buildChart();
+buildActivities();
+buildFormats();
+restoreState();
+renderTally();
+update();
+if(timerStart!==null) runTicker(); else paintTimer();
+</script>
+</body>
+</html>

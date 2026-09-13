@@ -244,8 +244,6 @@ input[type=time]{min-height:36px}
   font-size:12.5px;font-weight:400;cursor:pointer;
 }
 .opt input{width:auto;margin:0;accent-color:var(--accent)}
-.optbox-row input[type=text]{width:180px;font-size:12.5px;padding:6px 8px}
-.optbox-note{font-size:11px;color:var(--muted)}
 .optbox-actions{display:flex;gap:8px}
 .optbox .btn{padding:5px 12px;font-size:12px}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -421,12 +419,6 @@ input[type=time]{min-height:36px}
       <div class="optbox-row" id="formatChoices">
         <span class="optbox-title">Export as</span>
       </div>
-      <div class="optbox-row" id="clioFields" hidden>
-        <input type="text" id="exportRate" placeholder="Rate" aria-label="Rate" inputmode="decimal">
-      </div>
-      <div class="optbox-row" id="formatNote" hidden>
-        <span class="optbox-note" id="formatNoteText"></span>
-      </div>
       <div class="optbox-actions">
         <button class="btn primary" id="exportGo" type="button">Download</button>
         <button class="btn" id="exportCancel" type="button">Cancel</button>
@@ -587,13 +579,11 @@ const BILLING={
   ]
 };
 
-const TIMEKEEPER_NOTE="User, Rate, Rate Type and Nonbillable are left blank to fill in the spreadsheet.";
 const EXPORT_FORMATS=[
   {id:"entered", label:"As entered", file:"billable-hours", rows:()=>rowsAsEntered()},
-  {id:"clio",    label:"Clio",       file:"billable-hours-clio", rows:()=>rowsClio(), needsRate:true,
-   note:"Matter must match the Clio matter display number exactly. Clio requires a price, so a blank rate may fail the import. Activity is sent as both the description and its UTBMS code."},
-  {id:"lawpay",  label:"LawPay",     file:"billable-hours-lawpay", rows:()=>rowsTimekeeper(), note:TIMEKEEPER_NOTE},
-  {id:"mycase",  label:"MyCase",     file:"billable-hours-mycase", rows:()=>rowsTimekeeper(), note:TIMEKEEPER_NOTE}
+  {id:"clio",    label:"Clio",       file:"billable-hours-clio", rows:()=>rowsClio()},
+  {id:"lawpay",  label:"LawPay",     file:"billable-hours-lawpay", rows:()=>rowsTimekeeper()},
+  {id:"mycase",  label:"MyCase",     file:"billable-hours-mycase", rows:()=>rowsTimekeeper()}
 ];
 
 const INC=BILLING.incrementMinutes;
@@ -676,7 +666,6 @@ function saveState(){
       tab:lastSource==="times"?"times":"duration",
       timerStart:timerStart,
       exportFormat:chosenFormat().id,
-      exportRate:document.getElementById("exportRate").value,
       tally:tally
     }));
   }catch(e){}
@@ -1015,7 +1004,6 @@ function rowsTimekeeper(){
   return rows;
 }
 function rowsClio(){
-  const rate=document.getElementById("exportRate").value.trim();
   const rows=[["matter","date","activity_description","note","price","quantity","type","activity_user","non_billable","utbms_activity_code","utbms_task_code","utbms_expense_code"]];
   tally.forEach(e=>{
     rows.push([
@@ -1023,7 +1011,7 @@ function rowsClio(){
       mdy(e.date),
       e.activity||"",
       e.description||"",
-      rate,
+      "",
       fmtBilled(billedFor(e.minutes)),
       "TimeEntry",
       "",
@@ -1067,7 +1055,7 @@ function buildFormats(){
     radio.name="exportFormat";
     radio.value=f.id;
     if(i===0) radio.checked=true;
-    radio.onchange=syncFormatFields;
+    radio.onchange=saveState;
     label.appendChild(radio);
     label.appendChild(document.createTextNode(" "+f.label));
     box.appendChild(label);
@@ -1075,14 +1063,6 @@ function buildFormats(){
 }
 
 const exportOptions=document.getElementById("exportOptions");
-function syncFormatFields(){
-  const f=chosenFormat();
-  document.getElementById("clioFields").hidden=!f.needsRate;
-  document.getElementById("formatNote").hidden=!f.note;
-  if(f.note) document.getElementById("formatNoteText").textContent=f.note;
-  saveState();
-}
-document.getElementById("exportRate").oninput=saveState;
 document.getElementById("exportCancel").onclick=()=>{ exportOptions.hidden=true; };
 document.getElementById("exportGo").onclick=()=>{ exportOptions.hidden=true; exportCsv(); };
 document.getElementById("exportBtn").onclick=()=>{
@@ -1260,8 +1240,6 @@ function restoreState(){
     const r=document.querySelector('input[name="exportFormat"][value="'+saved.exportFormat+'"]');
     if(r) r.checked=true;
   }
-  document.getElementById("exportRate").value=typeof saved.exportRate==="string"?saved.exportRate:"";
-  syncFormatFields();
   if(typeof saved.timerStart==="number" && saved.timerStart>0 && saved.timerStart<=Date.now()){
     timerStart=saved.timerStart;
   }

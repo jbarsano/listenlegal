@@ -312,18 +312,12 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
 .step-card.inactive .line{font-style:italic}
 .step-card.inactive .copy-btn{display:none}
 
-.zoom-controls{
-  position:absolute;left:20px;bottom:24px;
-  display:flex;flex-direction:column;
-  background:#fff;border:1px solid var(--border-strong);border-radius:4px;
-  overflow:hidden;width:34px;
+.copy-btn{position:relative}
+.copy-btn::before{content:"";position:absolute;left:50%;top:50%;width:44px;height:44px;transform:translate(-50%,-50%)}
+@media print{
+.toolbar .tools,.copy-btn,.footer-links{display:none!important}
+.step-card,.callout{break-inside:avoid}
 }
-.zoom-controls button{
-  border:none;background:#fff;padding:8px 0;cursor:default;
-  border-bottom:1px solid var(--border);
-}
-.zoom-controls button:last-child{border-bottom:none}
-.zoom-controls svg{width:14px;height:14px;stroke:var(--muted);margin:0 auto;display:block}
 </style>
 </head>
 
@@ -366,10 +360,6 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
 </div>
 
 <div class="canvas">
-  <div class="zoom-controls">
-    <button><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M12 3v7m0 4v7M5 12h14"/></svg></button>
-    <button><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
-  </div>
 
   <div class="flow">
 
@@ -499,8 +489,8 @@ select:disabled{background:#f3f2f1;color:var(--muted)}
         </a>
       </div>
       <div class="foot-note">
-        <div id="src-fpl">1. U.S. Dep't of Health &amp; Hum. Servs., Off. of the Assistant Sec'y for Plan. &amp; Evaluation, <i>Poverty Guidelines</i> (2026), <a href="https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines" target="_blank" rel="noopener noreferrer">https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines</a> (calculator figures updated Feb. 19, 2026).</div>
-        <div id="src-mfi">2. D.C. Dep't of Hous. &amp; Cmty. Dev., <i>2026 Inclusionary Zoning Maximum Income, Rent and Purchase Price Schedule</i> (2026), <a href="https://dhcd.dc.gov/publication/2026-inclusionary-zoning-maximum-income-rent-and-purchase-price-schedule" target="_blank" rel="noopener noreferrer">https://dhcd.dc.gov/publication/2026-inclusionary-zoning-maximum-income-rent-and-purchase-price-schedule</a> (calculator figures updated Feb. 19, 2026).</div>
+        <div id="src-fpl">1. U.S. Department of Health and Human Services, <a href="https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines" target="_blank" rel="noopener noreferrer"><i>2026 Poverty Guidelines</i></a>. Calculator figures updated Feb. 19, 2026.</div>
+        <div id="src-mfi">2. D.C. Department of Housing and Community Development, <a href="https://dhcd.dc.gov/publication/2026-inclusionary-zoning-maximum-income-rent-and-purchase-price-schedule" target="_blank" rel="noopener noreferrer"><i>2026 Inclusionary Zoning Income Schedule</i></a>. Calculator figures updated Feb. 19, 2026.</div>
       </div>
     </div>
 

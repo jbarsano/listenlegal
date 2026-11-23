@@ -350,6 +350,8 @@ input[type=time]{min-height:36px}
 }
 .share-link:hover{color:var(--text);text-decoration:underline}
 .share-link .share-ic{width:15px;height:15px;flex-shrink:0}
+.footer-links{flex-wrap:wrap;row-gap:8px}
+.share-link{white-space:nowrap}
 
 @media print{
   .appbar,.toolbar,.connector,.confirm,.actions-strip,
@@ -537,9 +539,13 @@ input[type=time]{min-height:36px}
           <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 7l4-4 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v10h12V10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Share this tool
         </button>
-        <a class="share-link" href="mailto:josette@barsanolaw.com?subject=Billable%20Hours%20Calculator%20Feedback">
+        <a class="share-link" href="mailto:hello@listenlegal.com?subject=Billable%20Hours%20Calculator%20Feedback">
           <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m4 6 8 7 8-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Send feedback
+        </a>
+        <a class="share-link" href="/privacy/">
+          <svg class="share-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Privacy
         </a>
       </div>
     </div>
@@ -810,7 +816,7 @@ function stopTimer(){
   fromTimes();
   update();
   paintTimer();
-  trackEvent("timer_used",{tool:"billable_hours_calculator",minutes:m});
+  trackEvent("timer_used",{tool:"billable_hours_calculator"});
   showToast("Timer stopped at "+fmtHM(m)+".");
 }
 function resetTimer(){
@@ -852,7 +858,7 @@ function update(){
   if(signature!==lastUseSignature){
     window.clearTimeout(useTimer);
     useTimer=window.setTimeout(()=>{
-      trackEvent("tool_used",{tool:"billable_hours_calculator",increment_minutes:INC,entry_method:lastSource});
+      trackEvent("tool_used",{tool:"billable_hours_calculator"});
       lastUseSignature=signature;
     },800);
   }
@@ -1037,7 +1043,7 @@ function chosenFormat(){
 function exportCsv(){
   const format=chosenFormat();
   downloadCsv(csvText(format.rows()),format.file+"-"+isoDate(new Date())+".csv");
-  trackEvent("export_csv",{tool:"billable_hours_calculator",entries:tally.length,format:format.id});
+  trackEvent("export_csv",{tool:"billable_hours_calculator"});
   showToast(tally.length+" "+(tally.length===1?"entry":"entries")+" exported.");
 }
 function buildFormats(){
@@ -1141,7 +1147,7 @@ document.getElementById("printBtn").onclick=()=>{
 document.getElementById("shareEntriesBtn").onclick=async ()=>{
   if(!tally.length){ showToast("No entries to share yet."); return; }
   const text=entriesText();
-  trackEvent("entries_shared",{tool:"billable_hours_calculator",entries:tally.length});
+  trackEvent("entries_shared",{tool:"billable_hours_calculator"});
   try{
     await navigator.clipboard.writeText(text);
     showToast(tally.length+" "+(tally.length===1?"entry":"entries")+" copied.");
@@ -1161,13 +1167,13 @@ document.getElementById("shareBtn").onclick=async ()=>{
   if(navigator.share){
     try{
       await navigator.share({title:"Billable Hours Calculator",url});
-      trackEvent("tool_shared",{tool:"billable_hours_calculator",method:"native_share"});
+      trackEvent("tool_shared",{tool:"billable_hours_calculator"});
       return;
     }catch(e){}
   }
   try{
     await navigator.clipboard.writeText(url);
-    trackEvent("tool_shared",{tool:"billable_hours_calculator",method:"copy_fallback"});
+    trackEvent("tool_shared",{tool:"billable_hours_calculator"});
     showToast("Link copied.");
   }catch(e){
     showToast("Could not copy automatically.");
